@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Nexus — National Digital Matchmaking Hub
 
-## Getting Started
+Frontend-only prototype of Bangladesh's national opportunity-matching ecosystem.
 
-First, run the development server:
+## Stack
+
+- Next.js (App Router)
+- JavaScript (no TypeScript)
+- Tailwind CSS v4
+- Zustand + localStorage persistence (`nexus-demo-v1`)
+- Recharts, Lucide, Sonner, React Hook Form, Zod
+
+## Quick start
+
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+## Demo accounts
+
+Password for all accounts: `demo123`
+
+| Role | Email |
+|------|-------|
+| Student | `student@nexus.demo` |
+| Faculty | `faculty@nexus.demo` |
+| Organization | `company@nexus.demo` |
+| University Admin | `university@nexus.demo` |
+| UGC Admin | `ugc@nexus.demo` |
+| Helpdesk | `helpdesk@nexus.demo` |
+
+On the login page, use the demo account cards for one-click sign-in. Use **Switch role** in the portal user menu to move between portals without logging out.
+
+Demo OTP for registration: `123456`
+
+## Scripts
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npm run build
+node scripts/verify-flows.mjs
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Notes
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+- All data is simulated. There is no backend, database, or real SSO/ERP/payment integration.
+- State persists in the browser via `localStorage` and can be reset from Settings.
+- Match scores are computed deterministically by `src/lib/matchEngine.js` (demo student × opp-001 = **88%**).
+- Prototype notice appears in the public header/footer and portal chrome.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scope
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+~131 routes covering public marketplace, auth/onboarding, and six role portals (student, faculty, organization, university admin, UGC, helpdesk) with shared end-to-end workflows for applications, co-funding, disputes, and helpdesk SLA.

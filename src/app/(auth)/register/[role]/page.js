@@ -1,0 +1,437 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter, useParams } from "next/navigation";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+import { AuthCard } from "@/components/auth/AuthCard";
+import {
+  Button,
+  Input,
+  Select,
+  Checkbox,
+  Textarea,
+  MultiStepForm,
+  FileUploader,
+  Combobox,
+} from "@/components/ui";
+import { useAppStore } from "@/store/useAppStore";
+import { authService } from "@/lib/mockServices";
+import {
+  DISCIPLINES,
+  DIVISIONS,
+  ORGANIZATION_TYPES,
+  OPPORTUNITY_TYPES,
+  YEAR_OPTIONS,
+  SEMESTER_OPTIONS,
+  FACULTY_DESIGNATIONS,
+} from "@/components/auth/authOptions";
+import { email as validateEmail, password as validatePassword, required } from "@/lib/validators";
+
+const ROLE_META = {
+  student: { title: "Student registration", subtitle: "Join as a student from any Bangladeshi university." },
+  faculty: { title: "Faculty registration", subtitle: "Register with your institutional credentials." },
+  organization: { title: "Organization registration", subtitle: "Companies, startups, NGOs, and training providers." },
+  "university-admin": {
+    title: "University admin registration",
+    subtitle: "Registrar, IQAC, or career services focal points.",
+  },
+};
+
+function validatePhone(value) {
+  if (!value) return "Phone number is required";
+  if (!/^(\+880|0)?1[3-9]\d{8}$/.test(value.replace(/[\s-]/g, ""))) {
+    return "Enter a valid Bangladesh mobile number";
+  }
+  return "";
+}
+
+export default function RegisterRolePage() {
+  const router = useRouter();
+  const params = useParams();
+  const role = params.role;
+  const universities = useAppStore((s) => s.universities);
+  const meta = ROLE_META[role];
+
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  // Shared fields
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [terms, setTerms] = useState(false);
+  const [privacy, setPrivacy] = useState(false);
+
+  // Student
+  const [universityId, setUniversityId] = useState("");
+  const [studentId, setStudentId] = useState("");
+  const [programme, setProgramme] = useState("");
+  const [department, setDepartment] = useState("");
+  const [currentYear, setCurrentYear] = useState("");
+  const [currentSemester, setCurrentSemester] = useState("");
+
+  // Faculty
+  const [employeeId, setEmployeeId] = useState("");
+  const [designation, setDesignation] = useState("");
+  const [researchInterests, setResearchInterests] = useState("");
+
+  // Organization multi-step
+  const [orgStep, setOrgStep] = useState(0);
+  const [orgType, setOrgType] = useState("");
+  const [orgName, setOrgName] = useState("");
+  const [orgDivision, setOrgDivision] = useState("");
+  const [orgWebsite, setOrgWebsite] = useState("");
+  const [repName, setRepName] = useState("");
+  const [repDesignation, setRepDesignation] = useState("");
+  const [tradeLicence, setTradeLicence] = useState(null);
+  const [orgInterests, setOrgInterests] = useState([]);
+  const [orgAgreement, setOrgAgreement] = useState(false);
+
+  // University admin
+  const [office, setOffice] = useState("");
+  const [uniAdminDesignation, setUniAdminDesignation] = useState("");
+  const [officialEmail, setOfficialEmail] = useState("");
+  const [adminEmployeeId, setAdminEmployeeId] = useState("");
+  const [authDoc, setAuthDoc] = useState(null);
+
+  useEffect(() => {
+    if (!meta) router.replace("/register");
+  }, [meta, router]);
+
+  if (!meta) return null;
+
+  const uniOptions = universities.map((u) => ({ value: u.id, label: `${u.shortName} — ${u.name}` }));
+
+  const validateCommon = () => ({
+    name: required(name, "Full name"),
+    email: validateEmail(email),
+    phone: validatePhone(phone),
+    password: validatePassword(password),
+    terms: terms ? "" : "You must accept the terms",
+    privacy: privacy ? "" : "You must accept the privacy policy",
+  });
+
+  const validateStudent = () => ({
+    ...validateCommon(),
+    universityId: required(universityId, "University"),
+    studentId: required(studentId, "Student ID"),
+    programme: required(programme, "Programme"),
+    department: required(department, "Department"),
+    currentYear: required(currentYear, "Year"),
+    currentSemester: required(currentSemester, "Semester"),
+  });
+
+  const validateFaculty = () => ({
+    ...validateCommon(),
+    universityId: required(universityId, "University"),
+    employeeId: required(employeeId, "Employee ID"),
+    designation: required(designation, "Designation"),
+    department: required(department, "Department"),
+    researchInterests: required(researchInterests, "Research interests"),
+  });
+
+  const validateOrgStep = () => {
+    if (orgStep === 0) return { orgType: required(orgType, "Organization type") };
+    if (orgStep === 1)
+      return {
+        orgName: required(orgName, "Organization name"),
+        orgDivision: required(orgDivision, "Division"),
+        email: validateEmail(email),
+        phone: validatePhone(phone),
+      };
+    if (orgStep === 2)
+      return {
+        repName: required(repName, "Representative name"),
+        repDesignation: required(repDesignation, "Designation"),
+        name: required(name, "Your name"),
+      };
+    if (orgStep === 3) return {};
+    if (orgStep === 4) return { orgInterests: orgInterests.length ? "" : "Select at least one interest" };
+    if (orgStep === 5)
+      return {
+        orgAgreement: orgAgreement ? "" : "You must accept the verification agreement",
+        password: validatePassword(password),
+        terms: terms ? "" : "Required",
+      };
+    return {};
+  };
+
+  const validateUniAdmin = () => ({
+    ...validateCommon(),
+    universityId: required(universityId, "University"),
+    office: required(office, "Office"),
+    uniAdminDesignation: required(uniAdminDesignation, "Designation"),
+    officialEmail: validateEmail(officialEmail),
+    adminEmployeeId: required(adminEmployeeId, "Employee ID"),
+    authDoc: authDoc ? "" : "Authorization document is required",
+  });
+
+  const submitRegistration = async (payload, needsApproval) => {
+    setLoading(true);
+    try {
+      const result = await authService.register(payload);
+      if (!result.ok) {
+        toast.error(result.error || "Registration failed");
+        return;
+      }
+      sessionStorage.setItem("nexus-pending-email", payload.email);
+      sessionStorage.setItem("nexus-pending-role", payload.role);
+      toast.success("Account created", { description: "Verify your email to continue." });
+      router.push("/verify-otp");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStudentFacultySubmit = async (e, validateFn, extra) => {
+    e.preventDefault();
+    const nextErrors = validateFn();
+    setErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) return;
+
+    const payload = {
+      role,
+      name,
+      email,
+      phone,
+      universityId,
+      department,
+      ...extra,
+    };
+    await submitRegistration(payload, false);
+  };
+
+  const handleStudentSubmit = (e) =>
+    handleStudentFacultySubmit(e, validateStudent, {
+      studentId,
+      programme,
+      department,
+      currentYear: Number(currentYear),
+      currentSemester: Number(currentSemester),
+    });
+
+  const handleFacultySubmit = (e) =>
+    handleStudentFacultySubmit(e, validateFaculty, {
+      employeeId,
+      designation,
+      researchAreas: researchInterests.split(",").map((s) => s.trim()).filter(Boolean),
+    });
+
+  const handleOrgNext = () => {
+    const nextErrors = validateOrgStep();
+    setErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) return;
+    if (orgStep < 5) setOrgStep((s) => s + 1);
+    else {
+      submitRegistration(
+        {
+          role: "organization",
+          name: repName || name,
+          email,
+          phone,
+          organizationName: orgName,
+          organizationType: orgType,
+          division: orgDivision,
+          website: orgWebsite,
+          representative: { name: repName, designation: repDesignation },
+          opportunityInterests: orgInterests,
+          documents: tradeLicence ? [tradeLicence] : [],
+          verificationStatus: "Pending",
+        },
+        true
+      );
+    }
+  };
+
+  const handleUniAdminSubmit = async (e) => {
+    e.preventDefault();
+    const nextErrors = validateUniAdmin();
+    setErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) return;
+
+    await submitRegistration(
+      {
+        role: "university-admin",
+        name,
+        email: officialEmail || email,
+        phone,
+        universityId,
+        office,
+        designation: uniAdminDesignation,
+        employeeId: adminEmployeeId,
+        documents: authDoc ? [authDoc] : [],
+        verificationStatus: "Pending",
+      },
+      true
+    );
+  };
+
+  const toggleOrgInterest = (item) => {
+    setOrgInterests((prev) =>
+      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
+    );
+  };
+
+  const passwordFields = (
+    <>
+      <div className="relative">
+        <Input
+          label="Password"
+          type={showPassword ? "text" : "password"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          error={errors.password}
+          required
+          hint="Minimum 6 characters"
+        />
+        <button
+          type="button"
+          className="absolute top-8 right-3 text-slate-400"
+          onClick={() => setShowPassword((v) => !v)}
+        >
+          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      </div>
+      <div className="space-y-2">
+        <Checkbox label="I accept the Terms of Service" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
+        {errors.terms ? <p className="text-xs text-danger">{errors.terms}</p> : null}
+        <Checkbox
+          label="I accept the Privacy Policy and consent to profile matching"
+          checked={privacy}
+          onChange={(e) => setPrivacy(e.target.checked)}
+        />
+        {errors.privacy ? <p className="text-xs text-danger">{errors.privacy}</p> : null}
+      </div>
+    </>
+  );
+
+  return (
+    <AuthCard title={meta.title} subtitle={meta.subtitle} className="max-w-xl">
+      <Link href="/register" className="mb-4 inline-flex items-center gap-1 text-sm text-nexus-700 hover:underline dark:text-nexus-300">
+        <ArrowLeft className="h-4 w-4" /> All roles
+      </Link>
+
+      {role === "student" ? (
+        <form onSubmit={handleStudentSubmit} className="space-y-4">
+          <Input label="Full name (English)" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="Ayesha Rahman" />
+          <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} required placeholder="you@std.buet.ac.bd" />
+          <Input label="Mobile" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} required placeholder="+8801712345678" hint="Bangladesh mobile number" />
+          <Combobox label="University" options={uniOptions} value={universityId} onChange={setUniversityId} placeholder="Search universities…" />
+          {errors.universityId ? <p className="text-xs text-danger">{errors.universityId}</p> : null}
+          <Input label="Student ID" value={studentId} onChange={(e) => setStudentId(e.target.value)} error={errors.studentId} required placeholder="BUET/CSE/2023/042" />
+          <Input label="Programme" value={programme} onChange={(e) => setProgramme(e.target.value)} error={errors.programme} required placeholder="BSc in Computer Science and Engineering" />
+          <Select label="Department" options={DISCIPLINES.map((d) => ({ value: d, label: d }))} value={department} onChange={(e) => setDepartment(e.target.value)} error={errors.department} placeholder="Select department" required />
+          <div className="grid grid-cols-2 gap-4">
+            <Select label="Year" options={YEAR_OPTIONS} value={currentYear} onChange={(e) => setCurrentYear(e.target.value)} error={errors.currentYear} placeholder="Year" required />
+            <Select label="Semester" options={SEMESTER_OPTIONS} value={currentSemester} onChange={(e) => setCurrentSemester(e.target.value)} error={errors.currentSemester} placeholder="Semester" required />
+          </div>
+          {passwordFields}
+          <Button type="submit" className="w-full" loading={loading}>Create student account</Button>
+        </form>
+      ) : null}
+
+      {role === "faculty" ? (
+        <form onSubmit={handleFacultySubmit} className="space-y-4">
+          <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="Dr. Rafiqul Islam" />
+          <Input label="Institutional email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} required placeholder="rafiqul@cse.buet.ac.bd" />
+          <Input label="Mobile" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} required />
+          <Combobox label="University" options={uniOptions} value={universityId} onChange={setUniversityId} placeholder="Search universities…" />
+          {errors.universityId ? <p className="text-xs text-danger">{errors.universityId}</p> : null}
+          <Input label="Employee ID" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} error={errors.employeeId} required placeholder="BUET/FAC/2010/088" />
+          <Select label="Designation" options={FACULTY_DESIGNATIONS.map((d) => ({ value: d, label: d }))} value={designation} onChange={(e) => setDesignation(e.target.value)} error={errors.designation} placeholder="Select designation" required />
+          <Select label="Department" options={DISCIPLINES.map((d) => ({ value: d, label: d }))} value={department} onChange={(e) => setDepartment(e.target.value)} error={errors.department} placeholder="Department" required />
+          <Textarea label="Research interests" value={researchInterests} onChange={(e) => setResearchInterests(e.target.value)} error={errors.researchInterests} required placeholder="Machine Learning, NLP, Healthcare Informatics" hint="Comma-separated areas" />
+          {passwordFields}
+          <Button type="submit" className="w-full" loading={loading}>Create faculty account</Button>
+        </form>
+      ) : null}
+
+      {role === "organization" ? (
+        <MultiStepForm
+          steps={["Type", "Details", "Representative", "Documents", "Interests", "Agreement"]}
+          current={orgStep}
+          onStepChange={setOrgStep}
+        >
+          <div className="space-y-4">
+            {orgStep === 0 ? (
+              <Select label="Organization type" options={ORGANIZATION_TYPES.map((t) => ({ value: t, label: t }))} value={orgType} onChange={(e) => setOrgType(e.target.value)} error={errors.orgType} placeholder="Select type" required />
+            ) : null}
+            {orgStep === 1 ? (
+              <>
+                <Input label="Organization name" value={orgName} onChange={(e) => setOrgName(e.target.value)} error={errors.orgName} required placeholder="Grameen Digital Ltd." />
+                <Select label="Head office division" options={DIVISIONS.map((d) => ({ value: d, label: d }))} value={orgDivision} onChange={(e) => setOrgDivision(e.target.value)} error={errors.orgDivision} placeholder="Division" required />
+                <Input label="Website" value={orgWebsite} onChange={(e) => setOrgWebsite(e.target.value)} placeholder="https://example.com.bd" />
+                <Input label="Contact email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} required />
+                <Input label="Contact phone" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} required />
+              </>
+            ) : null}
+            {orgStep === 2 ? (
+              <>
+                <Input label="Representative name" value={repName} onChange={(e) => setRepName(e.target.value)} error={errors.repName} required />
+                <Input label="Representative designation" value={repDesignation} onChange={(e) => setRepDesignation(e.target.value)} error={errors.repDesignation} required placeholder="HR Manager" />
+                <Input label="Your login name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required />
+              </>
+            ) : null}
+            {orgStep === 3 ? (
+              <>
+                <FileUploader label="Trade licence / RJSC certificate" accept=".pdf,.jpg,.png" value={tradeLicence} onChange={setTradeLicence} onRemove={() => setTradeLicence(null)} />
+                <p className="text-xs text-secondary">Placeholder upload — metadata stored only. Required for verification.</p>
+              </>
+            ) : null}
+            {orgStep === 4 ? (
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Hiring & partnership interests</p>
+                {OPPORTUNITY_TYPES.slice(0, 12).map((item) => (
+                  <Checkbox key={item} label={item} checked={orgInterests.includes(item)} onChange={() => toggleOrgInterest(item)} />
+                ))}
+                {errors.orgInterests ? <p className="text-xs text-danger">{errors.orgInterests}</p> : null}
+              </div>
+            ) : null}
+            {orgStep === 5 ? (
+              <>
+                <p className="text-sm text-secondary">By submitting, you agree to Nexus organization verification. Status will be <strong>Pending</strong> until reviewed.</p>
+                <Checkbox label="I agree to organization verification terms" checked={orgAgreement} onChange={(e) => setOrgAgreement(e.target.checked)} />
+                {errors.orgAgreement ? <p className="text-xs text-danger">{errors.orgAgreement}</p> : null}
+                {passwordFields}
+              </>
+            ) : null}
+            <div className="flex gap-3 pt-2">
+              {orgStep > 0 ? (
+                <Button variant="secondary" type="button" onClick={() => setOrgStep((s) => s - 1)}>Back</Button>
+              ) : null}
+              <Button type="button" className="flex-1" onClick={handleOrgNext} loading={loading && orgStep === 5}>
+                {orgStep === 5 ? "Submit for verification" : "Continue"}
+              </Button>
+            </div>
+          </div>
+        </MultiStepForm>
+      ) : null}
+
+      {role === "university-admin" ? (
+        <form onSubmit={handleUniAdminSubmit} className="space-y-4">
+          <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required />
+          <Combobox label="University" options={uniOptions} value={universityId} onChange={setUniversityId} placeholder="Search universities…" />
+          {errors.universityId ? <p className="text-xs text-danger">{errors.universityId}</p> : null}
+          <Input label="Office / unit" value={office} onChange={(e) => setOffice(e.target.value)} error={errors.office} required placeholder="Office of the Registrar / IQAC / Career Services" />
+          <Input label="Designation" value={uniAdminDesignation} onChange={(e) => setUniAdminDesignation(e.target.value)} error={errors.uniAdminDesignation} required placeholder="Deputy Registrar" />
+          <Input label="Official email" type="email" value={officialEmail} onChange={(e) => setOfficialEmail(e.target.value)} error={errors.officialEmail} required placeholder="karim.hossain@buet.ac.bd" hint="Must be @ac.bd institutional domain" />
+          <Input label="Mobile" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} required />
+          <Input label="Employee ID" value={adminEmployeeId} onChange={(e) => setAdminEmployeeId(e.target.value)} error={errors.adminEmployeeId} required />
+          <FileUploader label="Authorization letter from VC / Registrar" accept=".pdf" value={authDoc} onChange={setAuthDoc} onRemove={() => setAuthDoc(null)} />
+          {errors.authDoc ? <p className="text-xs text-danger">{errors.authDoc}</p> : null}
+          {passwordFields}
+          <p className="text-xs text-secondary">Submission enters <strong>approval pending</strong> until verified by UGC programme office.</p>
+          <Button type="submit" className="w-full" loading={loading}>Submit for approval</Button>
+        </form>
+      ) : null}
+
+      <p className="mt-4 text-center text-sm text-secondary">
+        Already registered? <Link href="/login" className="text-nexus-700 hover:underline dark:text-nexus-300">Sign in</Link>
+      </p>
+    </AuthCard>
+  );
+}

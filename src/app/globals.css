@@ -1,26 +1,130 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Brand palette
+     #3368A0 primary · #66A3BF secondary · #C8DFDB sage
+     #FFFFFF body · #F9F8F6 navbar/footer */
+  --color-nexus-50: #f5f8f7;
+  --color-nexus-100: #c8dfdb;
+  --color-nexus-200: #a9cfd0;
+  --color-nexus-300: #8abbc8;
+  --color-nexus-400: #66a3bf;
+  --color-nexus-500: #4c86b0;
+  --color-nexus-600: #3368a0;
+  --color-nexus-700: #2a5685;
+  --color-nexus-800: #22456b;
+  --color-nexus-900: #1a3552;
+  --color-nexus-950: #122438;
+
+  --color-cream: #ffffff;
+  --color-chrome: #f9f8f6;
+  --color-sage: #c8dfdb;
+  --color-sky: #66a3bf;
+  --color-ocean: #3368a0;
+
+  --color-institutional: #3368a0;
+  --color-institutional-dark: #2a5685;
+  --color-ugc: #4c5f8a;
+  --color-ugc-dark: #36456a;
+  --color-opportunity: #b8893d;
+  --color-opportunity-dark: #946e2f;
+  --color-success: #3d7a68;
+  --color-danger: #b91c1c;
+  --color-info: #66a3bf;
+
+  --color-status-draft: #64748b;
+  --color-status-submitted: #3368a0;
+  --color-status-review: #b8893d;
+  --color-status-approved: #3d7a68;
+  --color-status-shortlisted: #66a3bf;
+  --color-status-offered: #4c5f8a;
+  --color-status-rejected: #b91c1c;
+  --color-status-withdrawn: #64748b;
+  --color-status-disputed: #c26a3a;
+  --color-status-completed: #3d7a68;
+  --color-status-expired: #94a3b8;
+
+  --font-sans: var(--font-geist-sans), "Noto Sans Bengali", "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-card: 0.875rem;
+}
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1a3552;
+  --card: #ffffff;
+  --card-foreground: #1a3552;
+  --muted: #c8dfdb;
+  --muted-foreground: #2a5685;
+  --border: #d5e3df;
+  --ring: #3368a0;
+  --chrome: #f9f8f6;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --background: #122438;
+  --foreground: #f2efe7;
+  --card: #1a3552;
+  --card-foreground: #f2efe7;
+  --muted: #22456b;
+  --muted-foreground: #a9cfd0;
+  --border: #2a5685;
+  --ring: #66a3bf;
+  --chrome: #1a3552;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    @apply antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-nexus-600;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .page-container {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .card-surface {
+    @apply rounded-2xl border border-[#d5e3df] bg-cream shadow-[0_1px_2px_rgba(51,104,160,0.05),0_4px_14px_rgba(51,104,160,0.04)] transition-all duration-200 dark:border-nexus-800 dark:bg-nexus-900 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)];
+  }
+
+  .card-interactive {
+    @apply rounded-2xl border border-[#d5e3df] bg-cream shadow-[0_1px_2px_rgba(51,104,160,0.05),0_4px_14px_rgba(51,104,160,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-nexus-400 hover:shadow-[0_8px_24px_rgba(51,104,160,0.12),0_2px_8px_rgba(51,104,160,0.06)] dark:border-nexus-800 dark:bg-nexus-900 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)] dark:hover:border-nexus-500 dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.35)];
+  }
+
+  .text-secondary {
+    @apply text-nexus-700/70 dark:text-nexus-200/70;
+  }
 }
