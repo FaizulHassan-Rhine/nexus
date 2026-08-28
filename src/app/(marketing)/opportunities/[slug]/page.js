@@ -20,6 +20,7 @@ import { Breadcrumbs } from "@/components/layout/Shell";
 import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser } from "@/hooks/useApp";
 import { scoreStudentOpportunity } from "@/lib/matchEngine";
+import { getSimilarOpportunities } from "@/lib/recommendationEngine";
 import { applicationService, courseService } from "@/lib/mockServices";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { toast } from "sonner";
@@ -51,9 +52,7 @@ export default function OpportunityDetailPage() {
 
   const similar = useMemo(() => {
     if (!opportunity) return [];
-    return opportunities
-      .filter((o) => o.id !== opportunity.id && (o.type === opportunity.type || o.organizationId === opportunity.organizationId))
-      .slice(0, 4);
+    return getSimilarOpportunities(opportunity, opportunities, 4);
   }, [opportunities, opportunity]);
 
   const linkedCourse = courses.find((c) => c.linkedOpportunityIds?.includes(opportunity?.id));
@@ -256,11 +255,12 @@ export default function OpportunityDetailPage() {
             <section>
               <h2 className="font-semibold">Similar opportunities</h2>
               <ul className="mt-3 space-y-2">
-                {similar.map((s) => (
+                {similar.map(({ opportunity: s, reason }) => (
                   <li key={s.id}>
                     <Link href={`/opportunities/${s.slug}`} className="text-sm text-nexus-700 hover:underline dark:text-nexus-300">
                       {s.title} — {s.type}
                     </Link>
+                    {reason ? <p className="text-xs text-secondary">{reason}</p> : null}
                   </li>
                 ))}
               </ul>

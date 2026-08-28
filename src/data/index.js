@@ -16,7 +16,7 @@ import { notifications } from "./notifications.js";
 import { auditEvents } from "./audit.js";
 import { helpArticles } from "./helpArticles.js";
 import { policies } from "./policies.js";
-import { scoreStudentOpportunity, scoreFacultyOpportunity } from "../lib/matchEngine.js";
+import { scoreStudentOpportunity, scoreFacultyOpportunity, scoreResearcherOpportunity } from "../lib/matchEngine.js";
 
 export {
   universities,
@@ -51,7 +51,9 @@ function computeMatches() {
     const score =
       match.candidateRole === "faculty"
         ? scoreFacultyOpportunity(candidate, opportunity)
-        : scoreStudentOpportunity(candidate, opportunity);
+        : match.candidateRole === "researcher"
+          ? scoreResearcherOpportunity(candidate, opportunity)
+          : scoreStudentOpportunity(candidate, opportunity);
 
     return {
       ...match,

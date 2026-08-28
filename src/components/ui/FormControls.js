@@ -208,7 +208,7 @@ export function Select({
           open && "border-nexus-600 ring-2 ring-nexus-600/20"
         )}
       >
-        <span className={cn("truncate", (!selected || selected.value === "") && "text-slate-400")}>
+        <span className={cn("min-w-0 truncate", (!selected || selected.value === "") && "text-slate-400")}>
           {selected?.label || placeholder || "Select"}
         </span>
         <ChevronDown
@@ -222,7 +222,7 @@ export function Select({
           id={listId}
           role="listbox"
           aria-labelledby={inputId}
-          className="absolute z-50 mt-1.5 max-h-64 w-full overflow-auto rounded-xl border border-[#d5e3df] bg-cream py-1 shadow-xl dark:border-nexus-700 dark:bg-nexus-900"
+          className="absolute z-50 mt-1.5 max-h-64 min-w-full w-max overflow-auto rounded-xl border border-[#d5e3df] bg-cream py-1 shadow-xl dark:border-nexus-700 dark:bg-nexus-900"
         >
           {items.map((item) => {
             const isSelected = item.value === currentValue;
@@ -244,7 +244,7 @@ export function Select({
                     if (!item.disabled) commit(item.value);
                   }}
                 >
-                  <span className="truncate">{item.label}</span>
+                  <span className="whitespace-nowrap">{item.label}</span>
                   {isSelected ? <Check className="h-4 w-4 shrink-0" aria-hidden /> : null}
                 </button>
               </li>

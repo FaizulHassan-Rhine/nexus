@@ -109,6 +109,7 @@ export const organizationNav = [
 export const universityNav = [
   { href: "/university-admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/university-admin/review-queue", label: "Review queue", icon: ClipboardCheck },
+  { href: "/university-admin/institution-profile", label: "Institution profile", icon: Building2 },
   { href: "/university-admin/students", label: "Students", icon: GraduationCap },
   { href: "/university-admin/faculty", label: "Faculty", icon: Users },
   { href: "/university-admin/organizations", label: "Organizations", icon: Building2 },
@@ -158,9 +159,29 @@ export const helpdeskNav = [
   { href: "/helpdesk/settings", label: "Settings", icon: Settings },
 ];
 
+export const researcherNav = [
+  { href: "/researcher/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/researcher/profile", label: "Research profile", icon: UserRound },
+  { href: "/researcher/projects", label: "Projects", icon: FolderKanban },
+  { href: "/researcher/collaborations", label: "Collaborations", icon: Handshake },
+  { href: "/researcher/publications", label: "Publications", icon: BookOpen },
+  { href: "/researcher/grants", label: "Grants", icon: Banknote },
+  { href: "/researcher/technology-transfer", label: "Technology transfer", icon: Cpu },
+  { href: "/researcher/datasets", label: "Datasets", icon: Files },
+  { href: "/researcher/opportunities", label: "Opportunities", icon: Search },
+  { href: "/researcher/matches", label: "Matches", icon: Sparkles },
+  { href: "/researcher/applications", label: "Applications", icon: FileText },
+  { href: "/researcher/calendar", label: "Calendar", icon: Calendar },
+  { href: "/researcher/messages", label: "Messages", icon: MessageSquare },
+  { href: "/researcher/notifications", label: "Notifications", icon: Bell },
+  { href: "/researcher/support", label: "Support", icon: LifeBuoy },
+  { href: "/researcher/settings", label: "Settings", icon: Settings },
+];
+
 export const NAV_BY_ROLE = {
   student: studentNav,
   faculty: facultyNav,
+  researcher: researcherNav,
   organization: organizationNav,
   "university-admin": universityNav,
   ugc: ugcNav,

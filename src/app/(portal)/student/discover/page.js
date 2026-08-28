@@ -8,8 +8,9 @@ import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser, useHydrated } from "@/hooks/useApp";
 import { toast } from "sonner";
 import { getStudentMatches } from "../_lib/helpers";
+import { getRecommendationsForStudent } from "@/lib/recommendationEngine";
 
-function DiscoverSection({ title, description, opportunities, matches, onMoreLikeThis, onNotInterested }) {
+function DiscoverSection({ title, description, opportunities, matches, reasonsById = {}, onMoreLikeThis, onNotInterested }) {
   if (!opportunities.length) return null;
   return (
     <section className="space-y-4">
@@ -17,9 +18,11 @@ function DiscoverSection({ title, description, opportunities, matches, onMoreLik
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {opportunities.map((opp) => {
           const match = matches.find((m) => m.opportunityId === opp.id);
+          const reason = reasonsById[opp.id];
           return (
             <div key={opp.id} className="space-y-2">
-              <OpportunityCard opportunity={opp} matchScore={match?.overallScore} />
+              <OpportunityCard opportunity={opp} matchScore={match?.overallScore ?? reasonsById[`score-${opp.id}`]} />
+              {reason ? <p className="px-1 text-xs text-secondary">{reason}</p> : null}
               <div className="flex gap-2 px-1">
                 <Button size="sm" variant="soft" onClick={() => onMoreLikeThis(opp, match)}>
                   More like this
@@ -39,8 +42,9 @@ function DiscoverSection({ title, description, opportunities, matches, onMoreLik
 export default function DiscoverPage() {
   const hydrated = useHydrated();
   const user = useCurrentUser();
-  const opportunities = useAppStore((s) => s.opportunities);
-  const matches = useAppStore((s) => s.matches);
+  const state = useAppStore();
+  const opportunities = state.opportunities;
+  const matches = state.matches;
   const setMatchInterest = useAppStore((s) => s.setMatchInterest);
   const recalculateMatchesForUser = useAppStore((s) => s.recalculateMatchesForUser);
 
@@ -95,7 +99,10 @@ export default function DiscoverPage() {
       .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
       .slice(0, 6);
 
+    const recommended = getRecommendationsForStudent(state, user, 6);
+
     return {
+      recommended,
       bestMatches: byMatch(topIds),
       careerGoals,
       financial,
@@ -104,7 +111,16 @@ export default function DiscoverPage() {
       skillsUnlock,
       deadlines,
     };
-  }, [user, published, userMatches, matchMap]);
+  }, [user, published, userMatches, matchMap, state]);
+
+  const recommendedReasons = useMemo(() => {
+    const map = {};
+    (sections.recommended || []).forEach((r) => {
+      map[r.opportunity.id] = r.reason;
+      map[`score-${r.opportunity.id}`] = r.matchScore;
+    });
+    return map;
+  }, [sections.recommended]);
 
   const handleMoreLikeThis = (opp, match) => {
     if (match) setMatchInterest(match.id, "More like this");
@@ -126,6 +142,15 @@ export default function DiscoverPage() {
         description="Personalized opportunity sections based on your profile, matches, and journey stage"
       />
 
+      <DiscoverSection
+        title="Recommended for you"
+        description="Personalized suggestions from the Nexus recommendation engine"
+        opportunities={(sections.recommended || []).map((r) => r.opportunity)}
+        matches={userMatches}
+        reasonsById={recommendedReasons}
+        onMoreLikeThis={handleMoreLikeThis}
+        onNotInterested={handleNotInterested}
+      />
       <DiscoverSection
         title="Best matches for you"
         description="Highest-scoring opportunities from the Nexus match engine"

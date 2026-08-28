@@ -4,7 +4,6 @@ export const REGISTERABLE_ROLES = [
   {
     id: "student",
     title: "Student",
-    titleBn: "শিক্ষার্থী",
     description: "Find internships, scholarships, courses, and project funding across Bangladesh.",
     icon: "🎓",
     href: "/register/student",
@@ -12,15 +11,20 @@ export const REGISTERABLE_ROLES = [
   {
     id: "faculty",
     title: "Faculty",
-    titleBn: "শিক্ষক",
     description: "Discover research grants, exchange programmes, consultancy, and industry collaboration.",
     icon: "📚",
     href: "/register/faculty",
   },
   {
+    id: "researcher",
+    title: "Researcher",
+    description: "Collaborate on joint research, publish datasets, apply for grants, and transfer technology.",
+    icon: "🔬",
+    href: "/register/researcher",
+  },
+  {
     id: "organization",
     title: "Organization",
-    titleBn: "প্রতিষ্ঠান",
     description: "Post opportunities, hire talent, and access UGC co-funding programmes.",
     icon: "🏢",
     href: "/register/organization",
@@ -28,7 +32,6 @@ export const REGISTERABLE_ROLES = [
   {
     id: "university-admin",
     title: "University Admin",
-    titleBn: "বিশ্ববিদ্যালয় প্রশাসক",
     description: "Verify profiles, approve matches, and manage institutional workflows.",
     icon: "🏛️",
     href: "/register/university-admin",

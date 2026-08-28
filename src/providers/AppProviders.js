@@ -34,7 +34,17 @@ export function AppProviders({ children }) {
     <>
       <ThemeSync />
       {children}
-      <Toaster richColors position="top-right" closeButton />
+      <Toaster
+        richColors
+        position="top-right"
+        closeButton
+        dir="ltr"
+        toastOptions={{
+          classNames: {
+            closeButton: "nexus-toast-close",
+          },
+        }}
+      />
     </>
   );
 }

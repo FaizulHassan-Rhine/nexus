@@ -1,5 +1,5 @@
 import { useAppStore } from "@/store/useAppStore";
-import { scoreStudentOpportunity, scoreFacultyOpportunity } from "@/lib/matchEngine";
+import { scoreStudentOpportunity, scoreFacultyOpportunity, scoreResearcherOpportunity } from "@/lib/matchEngine";
 
 const delay = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms + Math.floor(Math.random() * 200)));
 
@@ -86,9 +86,9 @@ export const matchService = {
     const candidate = store().users.find((u) => u.id === candidateId);
     const opportunity = store().opportunities.find((o) => o.id === opportunityId);
     if (!candidate || !opportunity) return null;
-    return candidate.role === "faculty"
-      ? scoreFacultyOpportunity(candidate, opportunity)
-      : scoreStudentOpportunity(candidate, opportunity);
+    if (candidate.role === "faculty") return scoreFacultyOpportunity(candidate, opportunity);
+    if (candidate.role === "researcher") return scoreResearcherOpportunity(candidate, opportunity);
+    return scoreStudentOpportunity(candidate, opportunity);
   },
   async forUser(userId) {
     await delay();

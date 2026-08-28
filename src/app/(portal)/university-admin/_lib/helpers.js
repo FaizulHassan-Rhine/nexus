@@ -18,14 +18,20 @@ export function universityFaculty(users, uniId) {
   return users.filter((u) => u.role === "faculty" && u.universityId === uniId);
 }
 
+export function universityResearchers(users, uniId) {
+  return users.filter((u) => u.role === "researcher" && u.universityId === uniId);
+}
+
 export function pendingVerifications(users, uniId) {
   return users.filter(
-    (u) => u.universityId === uniId && ["student", "faculty"].includes(u.role) && u.verificationStatus === "Pending"
+    (u) => u.universityId === uniId && ["student", "faculty", "researcher"].includes(u.role) && u.verificationStatus === "Pending"
   );
 }
 
 export function pendingMatches(matches, users, uniId) {
-  const ids = new Set(universityStudents(users, uniId).concat(universityFaculty(users, uniId)).map((u) => u.id));
+  const ids = new Set(
+    universityStudents(users, uniId).concat(universityFaculty(users, uniId), universityResearchers(users, uniId)).map((u) => u.id)
+  );
   return matches.filter((m) => ids.has(m.candidateId) && m.universityReviewStatus === "Pending");
 }
 

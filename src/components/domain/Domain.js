@@ -62,6 +62,20 @@ export function MatchScoreRing({ score, size = 64, className }) {
   );
 }
 
+const MATCH_BREAKDOWN_LABELS = {
+  skills: "Skills fit",
+  qualifications: "Qualifications",
+  preferences: "Preferences",
+  affiliation: "Institutional affiliation",
+  projectRequirements: "Project requirements",
+  location: "Location fit",
+  schedule: "Schedule fit",
+  compensation: "Compensation fit",
+  historicalPerformance: "Historical performance",
+  availability: "Availability",
+  funding: "Funding alignment",
+};
+
 export function MatchBreakdown({ scoreResult, className }) {
   if (!scoreResult) return null;
   const band = getMatchBand(scoreResult.total);
@@ -77,7 +91,7 @@ export function MatchBreakdown({ scoreResult, className }) {
       </div>
       <div className="space-y-2">
         {Object.entries(breakdown).map(([key, value]) => (
-          <Progress key={key} label={key} value={Number(value)} />
+          <Progress key={key} label={MATCH_BREAKDOWN_LABELS[key] || key} value={Number(value)} />
         ))}
       </div>
       {scoreResult.reasons?.length ? (
@@ -411,15 +425,39 @@ export function ProfileCompletionCard({ value = 0, href = "#" }) {
   );
 }
 
+let clockSnapshot = 0;
+let clockInterval = null;
+const clockSubscribers = new Set();
+
+function subscribeClock(onStoreChange) {
+  clockSubscribers.add(onStoreChange);
+  if (!clockSnapshot) clockSnapshot = Date.now();
+  if (!clockInterval) {
+    clockInterval = setInterval(() => {
+      clockSnapshot = Date.now();
+      clockSubscribers.forEach((cb) => cb());
+    }, 60_000);
+  }
+  return () => {
+    clockSubscribers.delete(onStoreChange);
+    if (clockSubscribers.size === 0 && clockInterval) {
+      clearInterval(clockInterval);
+      clockInterval = null;
+    }
+  };
+}
+
+function getClockSnapshot() {
+  if (!clockSnapshot) clockSnapshot = Date.now();
+  return clockSnapshot;
+}
+
+function getClockServerSnapshot() {
+  return 0;
+}
+
 export function SlaBadge({ deadline }) {
-  const nowMs = useSyncExternalStore(
-    (onStoreChange) => {
-      const id = setInterval(onStoreChange, 60_000);
-      return () => clearInterval(id);
-    },
-    () => Date.now(),
-    () => 0
-  );
+  const nowMs = useSyncExternalStore(subscribeClock, getClockSnapshot, getClockServerSnapshot);
   if (!deadline) return null;
   if (!nowMs) return <Badge tone="amber">SLA pending</Badge>;
   const remaining = new Date(deadline).getTime() - nowMs;

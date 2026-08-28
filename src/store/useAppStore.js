@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { getInitialSeedState } from "./seedState";
 import { STORE_KEY, STORE_VERSION, DEMO_PASSWORD, ROLE_DASHBOARDS } from "@/lib/constants";
-import { scoreStudentOpportunity, scoreFacultyOpportunity } from "@/lib/matchEngine";
+import { scoreStudentOpportunity, scoreFacultyOpportunity, scoreResearcherOpportunity } from "@/lib/matchEngine";
 import { slugify } from "@/lib/formatters";
 
 function now() {
@@ -34,6 +34,19 @@ function notify(get, set, notification) {
   };
   set({ notifications: [entry, ...(get().notifications || [])] });
   return entry;
+}
+
+function mergeSeedById(existing = [], seedRecords = [], key = "id") {
+  const map = new Map(existing.map((record) => [record[key], record]));
+  seedRecords.forEach((record) => {
+    if (!map.has(record[key])) map.set(record[key], record);
+  });
+  return Array.from(map.values());
+}
+
+function findSeedUserByEmail(email) {
+  const normalized = String(email).toLowerCase();
+  return seed.users.find((u) => u.email.toLowerCase() === normalized) || null;
 }
 
 const seed = getInitialSeedState();
@@ -149,10 +162,29 @@ export const useAppStore = create(
       },
 
       login: (email, password) => {
-        const user = get().users.find((u) => u.email.toLowerCase() === String(email).toLowerCase());
-        if (!user || password !== DEMO_PASSWORD) {
+        if (password !== DEMO_PASSWORD) {
           return { ok: false, error: "Invalid email or password" };
         }
+
+        const normalized = String(email).toLowerCase();
+        let user = get().users.find((u) => u.email.toLowerCase() === normalized);
+        if (!user) {
+          const seedUser = findSeedUserByEmail(normalized);
+          if (seedUser) {
+            const users = [...get().users, seedUser];
+            set({ users });
+            user = seedUser;
+          }
+        }
+
+        if (!user) {
+          return { ok: false, error: "Invalid email or password" };
+        }
+
+        if (!ROLE_DASHBOARDS[user.role]) {
+          return { ok: false, error: "This role is not available yet" };
+        }
+
         set({ currentUserId: user.id });
         withAudit(get, set, {
           actorId: user.id,
@@ -179,8 +211,16 @@ export const useAppStore = create(
       },
 
       switchDemoRole: (email) => {
-        const user = get().users.find((u) => u.email === email);
-        if (!user) return { ok: false };
+        let user = get().users.find((u) => u.email.toLowerCase() === String(email).toLowerCase());
+        if (!user) {
+          const seedUser = findSeedUserByEmail(email);
+          if (seedUser) {
+            const users = [...get().users, seedUser];
+            set({ users });
+            user = seedUser;
+          }
+        }
+        if (!user || !ROLE_DASHBOARDS[user.role]) return { ok: false };
         set({ currentUserId: user.id });
         return { ok: true, user, redirect: ROLE_DASHBOARDS[user.role] };
       },
@@ -190,7 +230,7 @@ export const useAppStore = create(
         if (exists) return { ok: false, error: "An account with this email already exists" };
         const user = {
           id: id(`user-${payload.role}`),
-          verificationStatus: payload.role === "student" || payload.role === "faculty" ? "Pending" : "Pending",
+          verificationStatus: payload.role === "student" || payload.role === "faculty" || payload.role === "researcher" ? "Pending" : "Pending",
           profileCompletion: 35,
           language: "en",
           lastActiveAt: now(),
@@ -494,7 +534,12 @@ export const useAppStore = create(
       recalculateMatchesForUser: (userId) => {
         const user = get().users.find((u) => u.id === userId);
         if (!user) return;
-        const scorer = user.role === "faculty" ? scoreFacultyOpportunity : scoreStudentOpportunity;
+        const scorer =
+          user.role === "faculty"
+            ? scoreFacultyOpportunity
+            : user.role === "researcher"
+              ? scoreResearcherOpportunity
+              : scoreStudentOpportunity;
         const relevant = get().opportunities.filter((o) => o.status === "Published" || o.status === "Open" || !o.status || o.status === "Active");
         const existing = get().matches.filter((m) => m.candidateId !== userId);
         const generated = relevant.slice(0, 25).map((opportunity) => {
@@ -503,6 +548,7 @@ export const useAppStore = create(
           return {
             id: prior?.id || id("match"),
             candidateId: userId,
+            candidateRole: user.role,
             opportunityId: opportunity.id,
             overallScore: score.total,
             scoreBreakdown: score.breakdown,
@@ -1041,6 +1087,18 @@ export const useAppStore = create(
       },
       onRehydrateStorage: () => (state) => {
         state?.setHydrated?.(true);
+      },
+      migrate: (persistedState, version) => {
+        if (!persistedState) return persistedState;
+        if (version < STORE_VERSION) {
+          return {
+            ...persistedState,
+            version: STORE_VERSION,
+            users: mergeSeedById(persistedState.users, seed.users),
+            matches: mergeSeedById(persistedState.matches, seed.matches),
+          };
+        }
+        return persistedState;
       },
     }
   )

@@ -1,7 +1,7 @@
 export const APP_NAME = "Nexus";
 export const APP_TAGLINE = "National Digital Matchmaking Hub";
 export const STORE_KEY = "nexus-demo-v1";
-export const STORE_VERSION = 1;
+export const STORE_VERSION = 2;
 export const DEMO_PASSWORD = "demo123";
 export const DEMO_OTP = "123456";
 export const TIMEZONE = "Asia/Dhaka";
@@ -10,6 +10,7 @@ export const DEFAULT_CURRENCY = "BDT";
 export const ROLES = {
   STUDENT: "student",
   FACULTY: "faculty",
+  RESEARCHER: "researcher",
   ORGANIZATION: "organization",
   UNIVERSITY_ADMIN: "university-admin",
   UGC: "ugc",
@@ -28,6 +29,12 @@ export const DEMO_ACCOUNTS = [
     role: ROLES.FACULTY,
     name: "Dr. Rafiqul Islam",
     scenario: "Faculty seeking research, exchange, and technology-transfer opportunities",
+  },
+  {
+    email: "researcher@nexus.demo",
+    role: ROLES.RESEARCHER,
+    name: "Dr. Nasreen Chowdhury",
+    scenario: "Independent researcher pursuing joint research, grants, and technology transfer",
   },
   {
     email: "company@nexus.demo",
@@ -160,6 +167,7 @@ export const MATCH_BANDS = [
 export const ROLE_DASHBOARDS = {
   [ROLES.STUDENT]: "/student/dashboard",
   [ROLES.FACULTY]: "/faculty/dashboard",
+  [ROLES.RESEARCHER]: "/researcher/dashboard",
   [ROLES.ORGANIZATION]: "/organization/dashboard",
   [ROLES.UNIVERSITY_ADMIN]: "/university-admin/dashboard",
   [ROLES.UGC]: "/ugc/dashboard",

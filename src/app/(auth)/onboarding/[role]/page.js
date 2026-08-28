@@ -49,6 +49,11 @@ const ONBOARDING_CONFIG = {
     steps: ["Office", "Permissions", "Workflow", "ERP", "Escalation"],
     optionalSteps: [3],
   },
+  researcher: {
+    title: "Researcher onboarding",
+    steps: ["Affiliation", "Research", "Publications", "Collaboration", "Datasets", "Documents"],
+    optionalSteps: [2, 4, 5],
+  },
 };
 
 function StepNav({ step, total, label, onBack, onSkip, canSkip, onSave, saving }) {
@@ -111,6 +116,14 @@ export default function OnboardingRolePage() {
   const [consultancyAreas, setConsultancyAreas] = useState("");
   const [hoursPerWeek, setHoursPerWeek] = useState(8);
   const [facultyDoc, setFacultyDoc] = useState(null);
+
+  // Researcher state
+  const [orcid, setOrcid] = useState("");
+  const [affiliationType, setAffiliationType] = useState("university");
+  const [collaborationInterests, setCollaborationInterests] = useState([]);
+  const [currentProjects, setCurrentProjects] = useState("");
+  const [datasetInterests, setDatasetInterests] = useState(false);
+  const [researcherDoc, setResearcherDoc] = useState(null);
 
   // Organization state
   const [companyBio, setCompanyBio] = useState("");
@@ -304,6 +317,71 @@ export default function OnboardingRolePage() {
     }
   };
 
+  const renderResearcherStep = () => {
+    switch (step) {
+      case 0:
+        return (
+          <div className="space-y-4">
+            <Select
+              label="Affiliation type"
+              options={[
+                { value: "university", label: "University-affiliated researcher" },
+                { value: "institute", label: "Research institute" },
+                { value: "independent", label: "Independent researcher" },
+              ]}
+              value={affiliationType}
+              onChange={(e) => setAffiliationType(e.target.value)}
+            />
+            <Input label="University / institute" value={university?.name || "—"} disabled />
+            <Input label="ORCID iD" value={orcid} onChange={(e) => setOrcid(e.target.value)} placeholder="0000-0002-1825-0097" />
+          </div>
+        );
+      case 1:
+        return (
+          <Textarea
+            label="Research areas"
+            value={researchAreas}
+            onChange={(e) => setResearchAreas(e.target.value)}
+            placeholder="Climate modelling, public health analytics, Bangla NLP…"
+          />
+        );
+      case 2:
+        return (
+          <Textarea
+            label="Key publications (one per line)"
+            value={publications}
+            onChange={(e) => setPublications(e.target.value)}
+            placeholder="Title — Journal — Year"
+            hint="Optional — can add more later"
+          />
+        );
+      case 3:
+        return (
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Collaboration interests</p>
+            {["Joint research", "Technology transfer", "Grant applications", "Dataset sharing", "Industry problem statements", "Policy research"].map((t) => (
+              <Checkbox key={t} label={t} checked={collaborationInterests.includes(t)} onChange={() => toggle(collaborationInterests, setCollaborationInterests, t)} />
+            ))}
+            <Textarea label="Current projects" value={currentProjects} onChange={(e) => setCurrentProjects(e.target.value)} placeholder="Project title — summary" />
+          </div>
+        );
+      case 4:
+        return (
+          <Checkbox
+            label="I plan to publish open datasets on Nexus"
+            checked={datasetInterests}
+            onChange={(e) => setDatasetInterests(e.target.checked)}
+          />
+        );
+      case 5:
+        return (
+          <FileUploader label="CV / ORCID summary" accept=".pdf" value={researcherDoc} onChange={setResearcherDoc} onRemove={() => setResearcherDoc(null)} />
+        );
+      default:
+        return null;
+    }
+  };
+
   const renderOrgStep = () => {
     switch (step) {
       case 0:
@@ -395,6 +473,7 @@ export default function OnboardingRolePage() {
   const renderStep = () => {
     if (role === "student") return renderStudentStep();
     if (role === "faculty") return renderFacultyStep();
+    if (role === "researcher") return renderResearcherStep();
     if (role === "organization") return renderOrgStep();
     if (role === "university-admin") return renderUniAdminStep();
     return null;
@@ -433,6 +512,19 @@ export default function OnboardingRolePage() {
         consultancyExpertise: consultancyAreas.split(",").map((s) => s.trim()).filter(Boolean),
         availability: { open: true, hoursPerWeek, notes: "" },
         documents: facultyDoc ? [facultyDoc] : [],
+      });
+    } else if (role === "researcher") {
+      await finish({
+        ...baseUpdates,
+        affiliationType,
+        orcid,
+        researchAreas: researchAreas.split(",").map((s) => s.trim()).filter(Boolean),
+        publications: publications.split("\n").filter(Boolean).map((line) => ({ title: line, year: 2024 })),
+        collaborationInterests,
+        currentProjects: currentProjects.split("\n").filter(Boolean).map((line) => ({ title: line, status: "Active" })),
+        datasetPublishing: datasetInterests,
+        availability: { open: true, hoursPerWeek: 10, notes: "Research collaboration" },
+        documents: researcherDoc ? [researcherDoc] : [],
       });
     } else if (role === "organization") {
       if (!policyAccepted) {

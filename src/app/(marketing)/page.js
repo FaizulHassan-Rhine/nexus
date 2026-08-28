@@ -12,6 +12,7 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
+  Microscope,
   Users,
 } from "lucide-react";
 import { Button, Input, Select, Badge, StatCard, SectionHeader, Modal } from "@/components/ui";
@@ -31,6 +32,7 @@ const WORKFLOW_STEPS = [
 const ROLE_CARDS = [
   { role: "student", title: "Student", desc: "Discover internships, scholarships, courses, and project funding matched to your profile.", icon: GraduationCap, href: "/register/student" },
   { role: "faculty", title: "Faculty", desc: "Find research collaborations, exchanges, and consultancy opportunities.", icon: Users, href: "/register/faculty" },
+  { role: "researcher", title: "Researcher", desc: "Access grants, datasets, joint research calls, and technology transfer pathways.", icon: Microscope, href: "/register/researcher" },
   { role: "organization", title: "Organization", desc: "Post opportunities, access UGC co-funding, and hire verified talent.", icon: Building2, href: "/register/organization" },
   { role: "university-admin", title: "University", desc: "Review matches, verify profiles, and monitor student placements.", icon: Landmark, href: "/register/university-admin" },
 ];
@@ -186,7 +188,7 @@ export default function LandingPage() {
       <section className={bandChrome}>
         <div className="page-container py-16">
           <SectionHeader title="Choose your role" description="Tailored registration and dashboards for every participant in the ecosystem." />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {ROLE_CARDS.map((card) => {
               const Icon = card.icon;
               return (

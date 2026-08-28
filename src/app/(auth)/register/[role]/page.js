@@ -32,6 +32,7 @@ import { email as validateEmail, password as validatePassword, required } from "
 const ROLE_META = {
   student: { title: "Student registration", subtitle: "Join as a student from any Bangladeshi university." },
   faculty: { title: "Faculty registration", subtitle: "Register with your institutional credentials." },
+  researcher: { title: "Researcher registration", subtitle: "Independent and affiliated researchers pursuing grants, collaboration, and technology transfer." },
   organization: { title: "Organization registration", subtitle: "Companies, startups, NGOs, and training providers." },
   "university-admin": {
     title: "University admin registration",
@@ -78,6 +79,8 @@ export default function RegisterRolePage() {
   const [employeeId, setEmployeeId] = useState("");
   const [designation, setDesignation] = useState("");
   const [researchInterests, setResearchInterests] = useState("");
+  const [orcid, setOrcid] = useState("");
+  const [affiliationType, setAffiliationType] = useState("university");
 
   // Organization multi-step
   const [orgStep, setOrgStep] = useState(0);
@@ -132,6 +135,12 @@ export default function RegisterRolePage() {
     designation: required(designation, "Designation"),
     department: required(department, "Department"),
     researchInterests: required(researchInterests, "Research interests"),
+  });
+
+  const validateResearcher = () => ({
+    ...validateCommon(),
+    universityId: required(universityId, "Affiliation"),
+    researchInterests: required(researchInterests, "Research areas"),
   });
 
   const validateOrgStep = () => {
@@ -219,6 +228,14 @@ export default function RegisterRolePage() {
       employeeId,
       designation,
       researchAreas: researchInterests.split(",").map((s) => s.trim()).filter(Boolean),
+    });
+
+  const handleResearcherSubmit = (e) =>
+    handleStudentFacultySubmit(e, validateResearcher, {
+      orcid,
+      affiliationType,
+      researchAreas: researchInterests.split(",").map((s) => s.trim()).filter(Boolean),
+      collaborationInterests: ["Joint research", "Technology transfer"],
     });
 
   const handleOrgNext = () => {
@@ -347,6 +364,30 @@ export default function RegisterRolePage() {
           <Textarea label="Research interests" value={researchInterests} onChange={(e) => setResearchInterests(e.target.value)} error={errors.researchInterests} required placeholder="Machine Learning, NLP, Healthcare Informatics" hint="Comma-separated areas" />
           {passwordFields}
           <Button type="submit" className="w-full" loading={loading}>Create faculty account</Button>
+        </form>
+      ) : null}
+
+      {role === "researcher" ? (
+        <form onSubmit={handleResearcherSubmit} className="space-y-4">
+          <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="Dr. Nasreen Chowdhury" />
+          <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} required placeholder="nasreen@research.buet.ac.bd" />
+          <Input label="Mobile" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} required />
+          <Combobox label="University / institute affiliation" options={uniOptions} value={universityId} onChange={setUniversityId} placeholder="Search affiliations…" />
+          {errors.universityId ? <p className="text-xs text-danger">{errors.universityId}</p> : null}
+          <Select
+            label="Affiliation type"
+            options={[
+              { value: "university", label: "University-affiliated" },
+              { value: "institute", label: "Research institute" },
+              { value: "independent", label: "Independent researcher" },
+            ]}
+            value={affiliationType}
+            onChange={(e) => setAffiliationType(e.target.value)}
+          />
+          <Input label="ORCID iD" value={orcid} onChange={(e) => setOrcid(e.target.value)} error={errors.orcid} placeholder="0000-0002-1825-0097" />
+          <Textarea label="Research areas" value={researchInterests} onChange={(e) => setResearchInterests(e.target.value)} error={errors.researchInterests} required placeholder="Climate resilience, public health data, Bangla NLP" hint="Comma-separated areas" />
+          {passwordFields}
+          <Button type="submit" className="w-full" loading={loading}>Create researcher account</Button>
         </form>
       ) : null}
 

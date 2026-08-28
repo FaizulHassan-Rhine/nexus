@@ -20,10 +20,15 @@ export const metadata = {
   description:
     "Prototype of Bangladesh's national opportunity-matching ecosystem connecting students, faculty, universities, organizations, and UGC.",
   robots: { index: false, follow: false },
+  icons: {
+    icon: "/brand/nexus-mark.svg",
+    apple: "/brand/nexus-mark.svg",
+  },
   openGraph: {
     title: "Nexus — National Digital Matchmaking Hub",
     description: "Frontend-only prototype. All data is simulated.",
     type: "website",
+    images: [{ url: "/brand/nexus-logo.svg", width: 220, height: 40, alt: "Nexus Matchmaking Hub" }],
   },
 };
 

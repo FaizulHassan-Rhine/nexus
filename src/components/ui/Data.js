@@ -40,6 +40,7 @@ export function FilterBar({ children, className }) {
     <div
       className={cn(
         "flex flex-wrap items-end gap-3 rounded-2xl border border-[#d5e3df]/80 bg-cream p-4 shadow-[0_1px_2px_rgba(51,104,160,0.05)] dark:border-nexus-700/80 dark:bg-nexus-900",
+        "[&_button[aria-haspopup=listbox]]:min-w-[9.5rem]",
         className
       )}
     >

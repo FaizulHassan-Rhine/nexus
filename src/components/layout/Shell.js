@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Bell,
   ChevronDown,
-  Languages,
   LogOut,
   Menu,
   MessageSquare,
@@ -26,6 +25,9 @@ import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser, useHydrated, useLanguage, useThemePreference } from "@/hooks/useApp";
 import { Avatar, Badge, IconButton, DropdownMenu, Input } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
+import { NexusLogo, NexusMark } from "@/components/brand/NexusLogo";
+
+export { NexusLogo, NexusMark };
 
 export function PrototypeBanner() {
   return null;
@@ -42,37 +44,14 @@ export function ThemeToggle() {
   );
 }
 
-export function LanguageToggle() {
-  const { language, setLanguage } = useLanguage();
-  return (
-    <IconButton
-      label="Toggle language"
-      onClick={() => setLanguage(language === "en" ? "bn" : "en")}
-    >
-      <Languages className="h-4 w-4" />
-      <span className="sr-only">{language === "en" ? "Switch to Bangla" : "Switch to English"}</span>
-    </IconButton>
-  );
-}
-
-export function NexusLogo({ className }) {
-  return (
-    <Link href="/" className={cn("inline-flex items-center gap-2 font-semibold text-nexus-700 dark:text-nexus-300", className)}>
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-nexus-600 text-sm text-white">N</span>
-      <span>Nexus</span>
-    </Link>
-  );
-}
-
 const publicLinks = [
   { href: "/opportunities", key: "nav.opportunities" },
   { href: "/courses", key: "nav.courses" },
   { href: "/scholarships", key: "nav.scholarships" },
-  { href: "/projects", key: "nav.projects" },
   { href: "/technology-marketplace", key: "nav.technology" },
   { href: "/organizations", key: "nav.organizations" },
   { href: "/universities", key: "nav.universities" },
-  { href: "/how-it-works", key: "nav.how" },
+  { href: "/platform", key: "nav.platform" },
 ];
 
 export function PublicHeader() {
@@ -108,7 +87,6 @@ export function PublicHeader() {
               <Search className="h-4 w-4" />
             </IconButton>
           </Link>
-          <LanguageToggle />
           <ThemeToggle />
           {hydrated && user ? (
             <Link href={ROLE_DASHBOARDS[user.role] || "/"}>
@@ -388,7 +366,7 @@ export function PortalShell({ role, children, title }) {
           )}
         >
           <div className="flex h-14 items-center justify-between border-b border-[#d5e3df] px-3 dark:border-nexus-800">
-            {!collapsed ? <NexusLogo /> : <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-nexus-600 text-sm text-white">N</span>}
+            {!collapsed ? <NexusLogo /> : <Link href="/" className="mx-auto inline-flex" aria-label="Nexus home"><NexusMark size={32} /></Link>}
           </div>
           <div className="flex-1 overflow-y-auto">
             <RoleSidebar role={role} collapsed={collapsed} />
@@ -434,7 +412,7 @@ export function PortalShell({ role, children, title }) {
             <div className="flex items-center gap-1">
               <Button size="sm" variant="secondary" onClick={() => setPaletteOpen(true)} className="hidden sm:inline-flex">
                 <Search className="h-4 w-4" />
-                <span className="text-xs text-secondary">Ctrl/Cmd+K</span>
+                <span className="text-xs text-white/90">Ctrl/Cmd+K</span>
               </Button>
               <Link href={`/${role === "university-admin" ? "university-admin" : role}/messages`}>
                 <IconButton label={t("nav.messages", language)}>
@@ -449,7 +427,6 @@ export function PortalShell({ role, children, title }) {
                   </span>
                 </IconButton>
               </Link>
-              <LanguageToggle />
               <ThemeToggle />
               <DropdownMenu
                 trigger={

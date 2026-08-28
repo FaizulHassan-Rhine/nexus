@@ -22,7 +22,7 @@ export function canViewCandidate(viewer, candidate) {
   if (viewer.role === ROLES.ORGANIZATION) {
     return candidate.privacyPreferences?.shareWithOrganizations !== false;
   }
-  if (viewer.role === ROLES.FACULTY) {
+  if (viewer.role === ROLES.FACULTY || viewer.role === ROLES.RESEARCHER) {
     return viewer.universityId === candidate.universityId;
   }
   if (viewer.role === ROLES.STUDENT) {

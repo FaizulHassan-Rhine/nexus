@@ -27,7 +27,6 @@ export default function RegisterPage() {
             </span>
             <h2 className="mt-2 font-semibold text-slate-900 group-hover:text-nexus-700 dark:text-slate-100 dark:group-hover:text-nexus-300">
               {role.title}
-              <span className="ml-1.5 text-sm font-normal text-secondary">({role.titleBn})</span>
             </h2>
             <p className="mt-1 text-sm text-secondary">{role.description}</p>
             <span className="mt-3 inline-block text-sm font-medium text-nexus-700 dark:text-nexus-300">

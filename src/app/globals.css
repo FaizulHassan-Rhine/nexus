@@ -128,3 +128,19 @@
     @apply text-nexus-700/70 dark:text-nexus-200/70;
   }
 }
+
+/* Sonner toast — close button top-right (overrides runtime-injected sonner styles) */
+[data-sonner-toaster],
+html[dir='ltr'] {
+  --toast-close-button-start: unset !important;
+  --toast-close-button-end: 0 !important;
+  --toast-close-button-transform: translate(35%, -35%) !important;
+}
+
+[data-sonner-toast][data-styled='true'] [data-close-button].nexus-toast-close,
+[data-sonner-toast][data-styled='true'] [data-close-button] {
+  left: auto !important;
+  right: 0 !important;
+  top: 0 !important;
+  transform: translate(35%, -35%) !important;
+}

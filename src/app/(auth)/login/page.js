@@ -15,6 +15,7 @@ import { cn } from "@/lib/cn";
 const roleLabels = {
   student: "Student",
   faculty: "Faculty",
+  researcher: "Researcher",
   organization: "Organization",
   "university-admin": "University Admin",
   ugc: "UGC",
@@ -24,6 +25,7 @@ const roleLabels = {
 const roleColors = {
   student: "border-nexus-200 bg-nexus-50 hover:border-nexus-400 dark:border-nexus-800 dark:bg-nexus-950/50",
   faculty: "border-violet-200 bg-violet-50 hover:border-violet-400 dark:border-violet-900 dark:bg-violet-950/30",
+  researcher: "border-teal-200 bg-teal-50 hover:border-teal-400 dark:border-teal-900 dark:bg-teal-950/30",
   organization: "border-blue-200 bg-blue-50 hover:border-blue-400 dark:border-blue-900 dark:bg-blue-950/30",
   "university-admin": "border-institutional/30 bg-institutional/5 hover:border-institutional/60",
   ugc: "border-ugc/30 bg-ugc/5 hover:border-ugc/60",
@@ -76,6 +78,10 @@ export default function LoginPage() {
       if (result.ok) {
         toast.success(`Signed in as ${result.user.name}`);
         router.push(result.redirect);
+      } else {
+        toast.error("Sign-in failed", {
+          description: result.error || "Demo account not found. Clear site data or reset demo data from Settings.",
+        });
       }
     } finally {
       setLoading(false);

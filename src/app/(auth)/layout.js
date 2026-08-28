@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { NexusLogo, LanguageToggle, ThemeToggle } from "@/components/layout/Shell";
+import { NexusLogo, ThemeToggle } from "@/components/layout/Shell";
 
 export default function AuthLayout({ children }) {
   return (
@@ -7,7 +7,6 @@ export default function AuthLayout({ children }) {
       <header className="flex items-center justify-between border-b border-[#d5e3df] bg-chrome px-4 py-3 dark:border-nexus-800 dark:bg-nexus-900">
         <NexusLogo />
         <div className="flex items-center gap-1">
-          <LanguageToggle />
           <ThemeToggle />
           <Link href="/" className="ml-2 text-sm text-secondary hover:text-nexus-700">
             Back to home
