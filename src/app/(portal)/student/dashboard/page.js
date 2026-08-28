@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BarChart,
@@ -26,6 +26,7 @@ import { PageHeader, StatCard, ChartCard, SectionHeader } from "@/components/ui"
 import { Button, Badge } from "@/components/ui";
 import {
   OpportunityCard,
+  OpportunityCollection,
   ProfileCompletionCard,
   MatchScoreRing,
 } from "@/components/domain/Domain";
@@ -55,6 +56,7 @@ export default function StudentDashboardPage() {
   const funding = useAppStore((s) => s.funding);
   const notifications = useAppStore((s) => s.notifications);
   const savedOpportunityIds = useAppStore((s) => s.savedOpportunityIds || []);
+  const [view, setView] = useState("grid");
   const journeyStage = useAppStore((s) => s.journeyStage);
   const setJourneyStage = useAppStore((s) => s.setJourneyStage);
 
@@ -163,13 +165,13 @@ export default function StudentDashboardPage() {
       </div>
 
       <SectionHeader title="Top matches" actions={<Link href="/student/matches" className="text-sm text-nexus-700">See all</Link>} />
-      <div className="grid gap-4 md:grid-cols-3">
+      <OpportunityCollection view={view} onViewChange={setView} count={topMatches.length} countLabel="top matches">
         {topMatches.map((m) => {
           const opp = opportunities.find((o) => o.id === m.opportunityId);
           if (!opp) return null;
-          return <OpportunityCard key={m.id} opportunity={opp} matchScore={m.overallScore} />;
+          return <OpportunityCard key={m.id} opportunity={opp} matchScore={m.overallScore} view={view} />;
         })}
-      </div>
+      </OpportunityCollection>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <ChartCard title="Match distribution" summary={`${userMatches.length} opportunities scored`}>
@@ -261,9 +263,9 @@ export default function StudentDashboardPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="card-surface p-4">
           <SectionHeader title="Saved opportunities" actions={<Link href="/student/saved" className="text-sm text-nexus-700">View all</Link>} />
-          <div className="space-y-3">
+          <div className="mt-3 flex flex-col gap-6">
             {savedOpps.map((o) => (
-              <OpportunityCard key={o.id} opportunity={o} matchScore={userMatches.find((m) => m.opportunityId === o.id)?.overallScore} />
+              <OpportunityCard key={o.id} opportunity={o} matchScore={userMatches.find((m) => m.opportunityId === o.id)?.overallScore} view="list" />
             ))}
             {!savedOpps.length && <p className="text-sm text-secondary">Nothing saved yet.</p>}
           </div>

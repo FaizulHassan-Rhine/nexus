@@ -32,7 +32,7 @@ export function DropdownMenu({ trigger, items = [], align = "right" }) {
         <div
           role="menu"
           className={cn(
-            "absolute z-40 mt-2 min-w-48 overflow-hidden rounded-xl border border-[#d5e3df] bg-cream py-1 shadow-lg dark:border-nexus-700 dark:bg-nexus-900",
+            "absolute z-50 mt-2 min-w-48 overflow-hidden rounded-xl border border-[#d5e3df] bg-cream py-1 shadow-lg dark:border-nexus-700 dark:bg-nexus-900",
             align === "right" ? "right-0" : "left-0"
           )}
         >

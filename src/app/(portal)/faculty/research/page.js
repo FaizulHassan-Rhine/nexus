@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/ui";
 import { Button, Input, Textarea, Badge } from "@/components/ui";
-import { OpportunityCard } from "@/components/domain/Domain";
+import { OpportunityCard, OpportunityCollection } from "@/components/domain/Domain";
 import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser, useHydrated } from "@/hooks/useApp";
 import { projectService } from "@/lib/mockServices";
@@ -25,6 +25,7 @@ export default function FacultyResearchPage() {
 
   const [interest, setInterest] = useState({ title: "", areas: "", labs: "", note: "" });
   const [joining, setJoining] = useState(null);
+  const [view, setView] = useState("grid");
 
   const researchOpps = useMemo(
     () => filterFacultyOpportunities(opportunities, { category: "research" }),
@@ -101,10 +102,12 @@ export default function FacultyResearchPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             <section>
               <h3 className="font-semibold">Joint research opportunities</h3>
-              <div className="mt-3 space-y-3">
-                {researchOpps.map((o) => (
-                  <OpportunityCard key={o.id} opportunity={o} />
-                ))}
+              <div className="mt-3">
+                <OpportunityCollection view={view} onViewChange={setView} count={researchOpps.length} countLabel="calls">
+                  {researchOpps.map((o) => (
+                    <OpportunityCard key={o.id} opportunity={o} view={view} />
+                  ))}
+                </OpportunityCollection>
               </div>
             </section>
             <section>

@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { PageHeader, EmptyState } from "@/components/ui";
-import { OpportunityCard } from "@/components/domain/Domain";
+import { OpportunityCard, OpportunityCollection } from "@/components/domain/Domain";
 import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser, useHydrated } from "@/hooks/useApp";
 import { getStudentMatches } from "../_lib/helpers";
@@ -10,6 +10,7 @@ import { getStudentMatches } from "../_lib/helpers";
 export default function SavedPage() {
   const hydrated = useHydrated();
   const user = useCurrentUser();
+  const [view, setView] = useState("grid");
   const opportunities = useAppStore((s) => s.opportunities);
   const matches = useAppStore((s) => s.matches);
   const savedOpportunityIds = useAppStore((s) => s.savedOpportunityIds || []);
@@ -34,15 +35,16 @@ export default function SavedPage() {
       />
 
       {saved.length ? (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <OpportunityCollection view={view} onViewChange={setView} count={saved.length} countLabel="saved">
           {saved.map((opp) => (
             <OpportunityCard
               key={opp.id}
               opportunity={opp}
               matchScore={userMatches.find((m) => m.opportunityId === opp.id)?.overallScore}
+              view={view}
             />
           ))}
-        </div>
+        </OpportunityCollection>
       ) : (
         <EmptyState
           title="No saved opportunities"

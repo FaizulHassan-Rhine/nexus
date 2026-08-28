@@ -1,9 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { Banknote, Bookmark, BookmarkCheck, Briefcase, CalendarDays, GitCompare, MapPin } from "lucide-react";
+import {
+  Banknote,
+  Bookmark,
+  BookmarkCheck,
+  Briefcase,
+  CalendarDays,
+  ExternalLink,
+  GitCompare,
+  LayoutGrid,
+  List,
+  MapPin,
+  MoreHorizontal,
+} from "lucide-react";
 import { useSyncExternalStore } from "react";
-import { Badge, StatusBadge, Button, Progress } from "@/components/ui";
+import { Badge, StatusBadge, Button, Progress, DropdownMenu, IconButton } from "@/components/ui";
 import { formatCurrency, formatDate, getMatchBand } from "@/lib/formatters";
 import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser } from "@/hooks/useApp";
@@ -118,7 +130,90 @@ export function MatchBreakdown({ scoreResult, className }) {
   );
 }
 
-export function OpportunityCard({ opportunity, matchScore, view = "grid" }) {
+export function OpportunityViewToggle({ view, onViewChange, className }) {
+  return (
+    <div
+      className={cn(
+        "inline-flex shrink-0 rounded-lg border border-[#d5e3df] bg-white p-1 shadow-sm dark:border-nexus-700 dark:bg-nexus-900",
+        className
+      )}
+      role="group"
+      aria-label="View mode"
+    >
+      <button
+        type="button"
+        aria-pressed={view === "grid"}
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold transition-colors",
+          view === "grid" ? "bg-nexus-600 text-white shadow-sm" : "text-nexus-700 hover:bg-chrome dark:text-nexus-200"
+        )}
+        onClick={() => onViewChange("grid")}
+      >
+        <LayoutGrid className="h-4 w-4" />
+        Grid
+      </button>
+      <button
+        type="button"
+        aria-pressed={view === "list"}
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold transition-colors",
+          view === "list" ? "bg-nexus-600 text-white shadow-sm" : "text-nexus-700 hover:bg-chrome dark:text-nexus-200"
+        )}
+        onClick={() => onViewChange("list")}
+      >
+        <List className="h-4 w-4" />
+        List
+      </button>
+    </div>
+  );
+}
+
+export function OpportunityCollection({
+  children,
+  view = "grid",
+  onViewChange,
+  count,
+  countLabel = "results",
+  className,
+  headerClassName,
+  showToolbar = true,
+}) {
+  return (
+    <div className={className}>
+      {showToolbar ? (
+        <div
+          className={cn(
+            "mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#dfe8e4] bg-chrome px-4 py-3 dark:border-nexus-800 dark:bg-nexus-950/40",
+            headerClassName
+          )}
+        >
+          <p className="text-sm font-medium text-nexus-800 dark:text-nexus-100">
+            {count != null ? `${count} ${countLabel}` : "Opportunities"}
+          </p>
+          {onViewChange ? <OpportunityViewToggle view={view} onViewChange={onViewChange} /> : null}
+        </div>
+      ) : null}
+      <div
+        className={
+          view === "list"
+            ? "flex flex-col gap-6"
+            : "grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3"
+        }
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export function OpportunityCard({
+  opportunity,
+  matchScore,
+  view = "grid",
+  actions = null,
+  onMatchBreakdown = null,
+  showUtilityActions = true,
+}) {
   const user = useCurrentUser();
   const organizations = useAppStore((s) => s.organizations);
   const saved = useAppStore((s) => s.savedOpportunityIds || []);
@@ -133,23 +228,58 @@ export function OpportunityCard({ opportunity, matchScore, view = "grid" }) {
     : opportunity.compensation?.label || "See details";
 
   const accent = getOpportunityAccent(opportunity.type);
-  const skills = (opportunity.requiredSkills || []).slice(0, 3);
-  const extraSkills = Math.max(0, (opportunity.requiredSkills || []).length - 3);
+  const skills = (opportunity.requiredSkills || []).slice(0, view === "list" ? 4 : 3);
+  const extraSkills = Math.max(0, (opportunity.requiredSkills || []).length - skills.length);
+
+  const handleSave = () => {
+    if (!user) {
+      toast.message("Sign in to save opportunities");
+      return;
+    }
+    toggleSavedOpportunity(opportunity.id);
+    toast.success(isSaved ? "Removed from saved" : "Saved");
+  };
+
+  const handleCompare = () => {
+    toggleCompareOpportunity(opportunity.id);
+    toast.message(inCompare ? "Removed from compare" : "Added to compare (max 3)");
+  };
+
+  const menuItems = [
+    {
+      label: "View details",
+      icon: <ExternalLink className="h-4 w-4" />,
+      onClick: () => {
+        window.location.href = `/opportunities/${opportunity.slug}`;
+      },
+    },
+    {
+      label: isSaved ? "Remove from saved" : "Save opportunity",
+      icon: isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />,
+      onClick: handleSave,
+    },
+    {
+      label: inCompare ? "Remove from compare" : "Add to compare",
+      icon: <GitCompare className="h-4 w-4" />,
+      onClick: handleCompare,
+    },
+    ...(onMatchBreakdown
+      ? [
+          { divider: true },
+          {
+            label: "Match breakdown",
+            onClick: onMatchBreakdown,
+          },
+        ]
+      : []),
+  ];
 
   return (
-    <article
-      className={cn(
-        "group relative flex flex-col overflow-hidden rounded-2xl border border-[#e6e2dc] bg-white shadow-[0_1px_2px_rgba(26,53,82,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-nexus-300 hover:shadow-[0_10px_28px_rgba(51,104,160,0.10)] dark:border-nexus-800 dark:bg-nexus-900",
-        view === "list" && "sm:flex-row sm:items-stretch"
-      )}
-    >
-      <div className={cn("absolute inset-y-0 left-0 w-1", accent.bar)} aria-hidden />
+    <article className="relative z-0 flex flex-col overflow-hidden rounded-2xl border border-[#dfe8e4] bg-white shadow-[0_1px_2px_rgba(26,53,82,0.05)] transition-shadow duration-200 hover:z-10 hover:border-nexus-300 hover:shadow-[0_12px_32px_rgba(51,104,160,0.12)] dark:border-nexus-800 dark:bg-nexus-900">
+      <div className={cn("pointer-events-none absolute inset-y-0 left-0 w-1.5", accent.bar)} aria-hidden />
 
-      <Link
-        href={`/opportunities/${opportunity.slug}`}
-        className={cn("min-w-0 flex-1 space-y-5 p-6 pl-7", view === "list" && "sm:p-7 sm:pl-8")}
-      >
-        <div className="flex items-start justify-between gap-4">
+      <div className={cn("min-w-0 flex-1 p-5 pl-7 sm:p-6 sm:pl-8", view === "list" && "sm:p-6 sm:pl-8")}>
+        <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className={cn("inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold", accent.chip)}>
@@ -163,57 +293,53 @@ export function OpportunityCard({ opportunity, matchScore, view = "grid" }) {
               ) : null}
             </div>
             <div>
-              <h3 className="line-clamp-2 text-lg leading-snug font-semibold tracking-tight text-nexus-900 transition-colors group-hover:text-nexus-600 dark:text-cream dark:group-hover:text-nexus-300">
+              <Link
+                href={`/opportunities/${opportunity.slug}`}
+                className="line-clamp-2 text-lg leading-snug font-semibold tracking-tight text-nexus-900 transition-colors hover:text-nexus-600 dark:text-cream dark:hover:text-nexus-300"
+              >
                 {opportunity.title}
-              </h3>
+              </Link>
               <p className="mt-1.5 text-sm text-secondary">{org?.name || "Organization"}</p>
             </div>
           </div>
-          {matchScore != null ? (
-            <div className="flex flex-col items-center gap-1">
-              <MatchScoreRing score={matchScore} size={56} />
-              <span className="text-[10px] font-medium tracking-wide text-secondary uppercase">Match</span>
-            </div>
-          ) : null}
+
+          <div className="relative z-20 flex shrink-0 items-start gap-2">
+            {matchScore != null ? (
+              <div className="flex flex-col items-center gap-1">
+                <MatchScoreRing score={matchScore} size={view === "list" ? 52 : 56} />
+                <span className="text-[10px] font-medium tracking-wide text-secondary uppercase">Match</span>
+              </div>
+            ) : null}
+            <DropdownMenu
+              align="right"
+              trigger={
+                <IconButton label="More options" className="h-8 w-8 rounded-lg border border-[#e6e2dc] bg-chrome/80 dark:border-nexus-700 dark:bg-nexus-950/60">
+                  <MoreHorizontal className="h-4 w-4" />
+                </IconButton>
+              }
+              items={menuItems}
+            />
+          </div>
         </div>
 
-        <dl className="grid gap-3 text-sm sm:grid-cols-2">
-          <div className="flex items-start gap-2 text-nexus-800 dark:text-nexus-100">
-            <MapPin className={cn("mt-0.5 h-4 w-4 shrink-0", accent.icon)} aria-hidden />
-            <div>
-              <dt className="text-[11px] font-medium tracking-wide text-secondary uppercase">Location</dt>
-              <dd className="mt-0.5 font-medium">{opportunity.location || opportunity.division || "—"}</dd>
-            </div>
-          </div>
-          <div className="flex items-start gap-2 text-nexus-800 dark:text-nexus-100">
-            <Briefcase className={cn("mt-0.5 h-4 w-4 shrink-0", accent.icon)} aria-hidden />
-            <div>
-              <dt className="text-[11px] font-medium tracking-wide text-secondary uppercase">Work mode</dt>
-              <dd className="mt-0.5 font-medium">{opportunity.workMode || "—"}</dd>
-            </div>
-          </div>
-          <div className="flex items-start gap-2 text-nexus-800 dark:text-nexus-100">
-            <Banknote className={cn("mt-0.5 h-4 w-4 shrink-0", accent.icon)} aria-hidden />
-            <div>
-              <dt className="text-[11px] font-medium tracking-wide text-secondary uppercase">Compensation</dt>
-              <dd className="mt-0.5 font-medium">{compensation}</dd>
-            </div>
-          </div>
-          <div className="flex items-start gap-2 text-nexus-800 dark:text-nexus-100">
-            <CalendarDays className={cn("mt-0.5 h-4 w-4 shrink-0", accent.icon)} aria-hidden />
-            <div>
-              <dt className="text-[11px] font-medium tracking-wide text-secondary uppercase">Deadline</dt>
-              <dd className="mt-0.5 font-medium">{formatDate(opportunity.deadline)}</dd>
-            </div>
-          </div>
+        <dl
+          className={cn(
+            "mt-5 grid gap-3 text-sm",
+            view === "list" ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-2"
+          )}
+        >
+          <MetaItem icon={MapPin} iconClass={accent.icon} label="Location" value={opportunity.location || opportunity.division || "—"} />
+          <MetaItem icon={Briefcase} iconClass={accent.icon} label="Work mode" value={opportunity.workMode || "—"} />
+          <MetaItem icon={Banknote} iconClass={accent.icon} label="Compensation" value={compensation} />
+          <MetaItem icon={CalendarDays} iconClass={accent.icon} label="Deadline" value={formatDate(opportunity.deadline)} />
         </dl>
 
         {skills.length ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             {skills.map((skill) => (
               <span
                 key={skill}
-                className="rounded-full border border-[#e0ddd6] px-2.5 py-1 text-xs text-nexus-700 dark:border-nexus-700 dark:text-nexus-200"
+                className="rounded-full border border-[#e0ddd6] bg-chrome/60 px-2.5 py-1 text-xs text-nexus-700 dark:border-nexus-700 dark:bg-nexus-950/40 dark:text-nexus-200"
               >
                 {skill}
               </span>
@@ -225,44 +351,40 @@ export function OpportunityCard({ opportunity, matchScore, view = "grid" }) {
             ) : null}
           </div>
         ) : null}
-      </Link>
-
-      <div
-        className={cn(
-          "flex items-center gap-2 border-t border-[#eeeae4] bg-[#fcfbf9] px-6 py-3.5 pl-7 dark:border-nexus-800 dark:bg-nexus-950/50",
-          view === "list" && "sm:w-44 sm:flex-col sm:justify-center sm:gap-2 sm:border-t-0 sm:border-l sm:px-4 sm:pl-4"
-        )}
-      >
-        <Button
-          size="sm"
-          variant="outline"
-          className="flex-1 sm:flex-none"
-          onClick={() => {
-            if (!user) {
-              toast.message("Sign in to save opportunities");
-              return;
-            }
-            toggleSavedOpportunity(opportunity.id);
-            toast.success(isSaved ? "Removed from saved" : "Saved");
-          }}
-        >
-          {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-          {isSaved ? "Saved" : "Save"}
-        </Button>
-        <Button
-          size="sm"
-          variant={inCompare ? "primary" : "secondary"}
-          className="flex-1 sm:flex-none"
-          onClick={() => {
-            toggleCompareOpportunity(opportunity.id);
-            toast.message(inCompare ? "Removed from compare" : "Added to compare (max 3)");
-          }}
-        >
-          <GitCompare className="h-4 w-4" />
-          Compare
-        </Button>
       </div>
+
+      {(actions || showUtilityActions) ? (
+        <div className="shrink-0 border-t border-[#e8e4de] bg-chrome px-5 py-4 pl-7 dark:border-nexus-800 dark:bg-nexus-950/60">
+          <div className="flex flex-wrap items-center gap-2">
+            {actions}
+            {showUtilityActions ? (
+              <>
+                <Button size="sm" variant="outline" onClick={handleSave}>
+                  {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                  {isSaved ? "Saved" : "Save"}
+                </Button>
+                <Button size="sm" variant={inCompare ? "primary" : "secondary"} onClick={handleCompare}>
+                  <GitCompare className="h-4 w-4" />
+                  Compare
+                </Button>
+              </>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </article>
+  );
+}
+
+function MetaItem({ icon: Icon, iconClass, label, value }) {
+  return (
+    <div className="flex items-start gap-2 text-nexus-800 dark:text-nexus-100">
+      <Icon className={cn("mt-0.5 h-4 w-4 shrink-0", iconClass)} aria-hidden />
+      <div className="min-w-0">
+        <dt className="text-[11px] font-medium tracking-wide text-secondary uppercase">{label}</dt>
+        <dd className="mt-0.5 truncate font-medium">{value}</dd>
+      </div>
+    </div>
   );
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Sparkles,
@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { PageHeader, StatCard, SectionHeader } from "@/components/ui";
 import { Button, Badge } from "@/components/ui";
-import { OpportunityCard, ProfileCompletionCard, MatchScoreRing } from "@/components/domain/Domain";
+import { OpportunityCard, OpportunityCollection, ProfileCompletionCard, MatchScoreRing } from "@/components/domain/Domain";
 import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser, useHydrated } from "@/hooks/useApp";
 import { formatDate, formatRelative } from "@/lib/formatters";
@@ -34,6 +34,7 @@ export default function ResearcherDashboardPage() {
   const hydrated = useHydrated();
   const user = useCurrentUser();
   const router = useRouter();
+  const [view, setView] = useState("grid");
   const opportunities = useAppStore((s) => s.opportunities);
   const matches = useAppStore((s) => s.matches);
   const applications = useAppStore((s) => s.applications);
@@ -156,18 +157,21 @@ export default function ResearcherDashboardPage() {
       </div>
 
       <SectionHeader title="Top matches" actions={<Link href="/researcher/matches" className="text-sm text-nexus-700">All matches</Link>} />
-      <div className="grid gap-4 md:grid-cols-3">
-        {topMatches.map(({ match, opp }) => (
-          <OpportunityCard key={opp.id} opportunity={opp} matchScore={match.overallScore} />
-        ))}
-        {!topMatches.length &&
-          collaborationOpps.map((o) => (
-            <OpportunityCard key={o.id} opportunity={o} />
-          ))}
+      <OpportunityCollection
+        view={view}
+        onViewChange={setView}
+        count={(topMatches.length || collaborationOpps.length)}
+        countLabel="matches"
+      >
+        {topMatches.length
+          ? topMatches.map(({ match, opp }) => (
+              <OpportunityCard key={opp.id} opportunity={opp} matchScore={match.overallScore} view={view} />
+            ))
+          : collaborationOpps.map((o) => <OpportunityCard key={o.id} opportunity={o} view={view} />)}
         {!topMatches.length && !collaborationOpps.length && (
           <p className="text-sm text-secondary">No matches yet — explore opportunities to generate scores.</p>
         )}
-      </div>
+      </OpportunityCollection>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="card-surface p-4">

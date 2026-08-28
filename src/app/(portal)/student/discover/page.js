@@ -1,46 +1,52 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { PageHeader, SectionHeader } from "@/components/ui";
 import { Button } from "@/components/ui";
-import { OpportunityCard } from "@/components/domain/Domain";
+import { OpportunityCard, OpportunityCollection, OpportunityViewToggle } from "@/components/domain/Domain";
 import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser, useHydrated } from "@/hooks/useApp";
 import { toast } from "sonner";
 import { getStudentMatches } from "../_lib/helpers";
 import { getRecommendationsForStudent } from "@/lib/recommendationEngine";
 
-function DiscoverSection({ title, description, opportunities, matches, reasonsById = {}, onMoreLikeThis, onNotInterested }) {
+function DiscoverSection({ title, description, opportunities, matches, reasonsById = {}, view, onMoreLikeThis, onNotInterested }) {
   if (!opportunities.length) return null;
   return (
     <section className="space-y-4">
       <SectionHeader title={title} description={description} />
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <OpportunityCollection view={view} showToolbar={false}>
         {opportunities.map((opp) => {
           const match = matches.find((m) => m.opportunityId === opp.id);
           const reason = reasonsById[opp.id];
           return (
-            <div key={opp.id} className="space-y-2">
-              <OpportunityCard opportunity={opp} matchScore={match?.overallScore ?? reasonsById[`score-${opp.id}`]} />
-              {reason ? <p className="px-1 text-xs text-secondary">{reason}</p> : null}
-              <div className="flex gap-2 px-1">
-                <Button size="sm" variant="soft" onClick={() => onMoreLikeThis(opp, match)}>
-                  More like this
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => onNotInterested(opp, match)}>
-                  Not interested
-                </Button>
-              </div>
-            </div>
+            <OpportunityCard
+              key={opp.id}
+              opportunity={opp}
+              matchScore={match?.overallScore ?? reasonsById[`score-${opp.id}`]}
+              view={view}
+              actions={
+                <>
+                  {reason ? <p className="w-full text-xs text-secondary">{reason}</p> : null}
+                  <Button size="sm" variant="soft" onClick={() => onMoreLikeThis(opp, match)}>
+                    More like this
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => onNotInterested(opp, match)}>
+                    Not interested
+                  </Button>
+                </>
+              }
+            />
           );
         })}
-      </div>
+      </OpportunityCollection>
     </section>
   );
 }
 
 export default function DiscoverPage() {
   const hydrated = useHydrated();
+  const [view, setView] = useState("grid");
   const user = useCurrentUser();
   const state = useAppStore();
   const opportunities = state.opportunities;
@@ -140,6 +146,7 @@ export default function DiscoverPage() {
       <PageHeader
         title="Discover"
         description="Personalized opportunity sections based on your profile, matches, and journey stage"
+        actions={<OpportunityViewToggle view={view} onViewChange={setView} />}
       />
 
       <DiscoverSection
@@ -148,6 +155,7 @@ export default function DiscoverPage() {
         opportunities={(sections.recommended || []).map((r) => r.opportunity)}
         matches={userMatches}
         reasonsById={recommendedReasons}
+        view={view}
         onMoreLikeThis={handleMoreLikeThis}
         onNotInterested={handleNotInterested}
       />
@@ -156,6 +164,7 @@ export default function DiscoverPage() {
         description="Highest-scoring opportunities from the Nexus match engine"
         opportunities={sections.bestMatches || []}
         matches={userMatches}
+        view={view}
         onMoreLikeThis={handleMoreLikeThis}
         onNotInterested={handleNotInterested}
       />
@@ -164,6 +173,7 @@ export default function DiscoverPage() {
         description={`Based on: ${(user?.careerGoals || []).join(", ") || "your profile"}`}
         opportunities={sections.careerGoals || []}
         matches={userMatches}
+        view={view}
         onMoreLikeThis={handleMoreLikeThis}
         onNotInterested={handleNotInterested}
       />
@@ -172,6 +182,7 @@ export default function DiscoverPage() {
         description="UGC co-funding, scholarships, and paid roles"
         opportunities={sections.financial || []}
         matches={userMatches}
+        view={view}
         onMoreLikeThis={handleMoreLikeThis}
         onNotInterested={handleNotInterested}
       />
@@ -180,6 +191,7 @@ export default function DiscoverPage() {
         description={`Opportunities in ${user?.preferredLocation || "your area"}`}
         opportunities={sections.nearYou || []}
         matches={userMatches}
+        view={view}
         onMoreLikeThis={handleMoreLikeThis}
         onNotInterested={handleNotInterested}
       />
@@ -188,6 +200,7 @@ export default function DiscoverPage() {
         description="Work from anywhere opportunities"
         opportunities={sections.remote || []}
         matches={userMatches}
+        view={view}
         onMoreLikeThis={handleMoreLikeThis}
         onNotInterested={handleNotInterested}
       />
@@ -196,6 +209,7 @@ export default function DiscoverPage() {
         description="Close a skill gap to unlock stronger matches"
         opportunities={sections.skillsUnlock || []}
         matches={userMatches}
+        view={view}
         onMoreLikeThis={handleMoreLikeThis}
         onNotInterested={handleNotInterested}
       />
@@ -204,6 +218,7 @@ export default function DiscoverPage() {
         description="Apply before these deadlines pass"
         opportunities={sections.deadlines || []}
         matches={userMatches}
+        view={view}
         onMoreLikeThis={handleMoreLikeThis}
         onNotInterested={handleNotInterested}
       />

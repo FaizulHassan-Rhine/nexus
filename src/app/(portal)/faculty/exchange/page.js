@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/ui";
 import { Button, Input, Textarea, Badge, StatusBadge } from "@/components/ui";
-import { OpportunityCard, ApplicationTimeline } from "@/components/domain/Domain";
+import { OpportunityCard, OpportunityCollection, ApplicationTimeline } from "@/components/domain/Domain";
 import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser, useHydrated } from "@/hooks/useApp";
 import { applicationService } from "@/lib/mockServices";
@@ -28,6 +28,7 @@ export default function FacultyExchangePage() {
   const [plan, setPlan] = useState({ teaching: "", research: "", duration: "1 semester" });
   const [report, setReport] = useState({ outcomes: "", publications: "", feedback: "" });
   const [applying, setApplying] = useState(null);
+  const [view, setView] = useState("grid");
 
   const exchangeOpps = useMemo(
     () => filterFacultyOpportunities(opportunities, { category: "exchange" }),
@@ -101,21 +102,24 @@ export default function FacultyExchangePage() {
         </TabList>
 
         <TabPanel value="discover">
-          <div className="grid gap-4 md:grid-cols-2">
+          <OpportunityCollection view={view} onViewChange={setView} count={exchangeOpps.length} countLabel="exchange programmes">
             {exchangeOpps.map((o) => {
-              const org = organizations.find((x) => x.id === o.organizationId);
               const match = userMatches.find((m) => m.opportunityId === o.id);
               return (
-                <div key={o.id} className="card-surface p-4">
-                  <OpportunityCard opportunity={o} matchScore={match?.overallScore} />
-                  <p className="mt-2 text-sm text-secondary">Host: {org?.name}</p>
-                  <Button size="sm" variant="outline" className="mt-3" onClick={() => checkEligibility(o)}>
-                    Check eligibility
-                  </Button>
-                </div>
+                <OpportunityCard
+                  key={o.id}
+                  opportunity={o}
+                  matchScore={match?.overallScore}
+                  view={view}
+                  actions={
+                    <Button size="sm" variant="outline" onClick={() => checkEligibility(o)}>
+                      Check eligibility
+                    </Button>
+                  }
+                />
               );
             })}
-          </div>
+          </OpportunityCollection>
         </TabPanel>
 
         <TabPanel value="apply">

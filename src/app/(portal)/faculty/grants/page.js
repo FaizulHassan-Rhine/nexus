@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/ui";
 import { Button, Input, Textarea, Badge, StatusBadge } from "@/components/ui";
-import { OpportunityCard, ApplicationTimeline, FundingSplitCard } from "@/components/domain/Domain";
+import { OpportunityCard, OpportunityCollection, ApplicationTimeline, FundingSplitCard } from "@/components/domain/Domain";
 import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser, useHydrated } from "@/hooks/useApp";
 import { applicationService } from "@/lib/mockServices";
@@ -32,6 +32,7 @@ export default function FacultyGrantsPage() {
     overhead: 0,
   });
   const [submitting, setSubmitting] = useState(null);
+  const [view, setView] = useState("grid");
 
   const grantOpps = useMemo(
     () => filterFacultyOpportunities(opportunities, { category: "grant" }),
@@ -106,19 +107,25 @@ export default function FacultyGrantsPage() {
         </TabList>
 
         <TabPanel value="calls">
-          <div className="grid gap-4 md:grid-cols-2">
+          <OpportunityCollection view={view} onViewChange={setView} count={grantOpps.length} countLabel="grant calls">
             {grantOpps.map((o) => (
-              <div key={o.id} className="space-y-2">
-                <OpportunityCard opportunity={o} />
-                <div className="flex gap-2 px-1">
-                  <Button size="sm" variant="outline" onClick={() => checkEligibility(o)}>Eligibility</Button>
-                  <Button size="sm" loading={submitting === o.id} onClick={() => submitForEndorsement(o)}>
-                    Submit for endorsement
-                  </Button>
-                </div>
-              </div>
+              <OpportunityCard
+                key={o.id}
+                opportunity={o}
+                view={view}
+                actions={
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => checkEligibility(o)}>
+                      Eligibility
+                    </Button>
+                    <Button size="sm" loading={submitting === o.id} onClick={() => submitForEndorsement(o)}>
+                      Submit for endorsement
+                    </Button>
+                  </>
+                }
+              />
             ))}
-          </div>
+          </OpportunityCollection>
         </TabPanel>
 
         <TabPanel value="draft">

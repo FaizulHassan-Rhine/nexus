@@ -58,43 +58,40 @@ export function StatusBadge({ status, className }) {
   const key = String(status || "").toLowerCase();
   return (
     <span
+      title={status}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
+        "inline-flex h-6 max-w-full min-w-0 items-center gap-1.5 rounded-full px-2.5 text-[11px] font-semibold leading-none",
         statusStyles[key] || statusStyles.draft,
         className
       )}
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden />
-      {status}
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" aria-hidden />
+      <span className="truncate">{status}</span>
     </span>
   );
 }
 
+const DEFAULT_AVATAR = "/placeholders/avatar-default.svg";
+
 export function Avatar({ name = "?", src, size = "md", className }) {
-  const sizes = { sm: "h-8 w-8 text-xs", md: "h-10 w-10 text-sm", lg: "h-14 w-14 text-lg" };
-  const initials = name
-    .split(" ")
-    .map((p) => p[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-  if (src) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={src} alt={name} className={cn("rounded-full object-cover", sizes[size], className)} />
-    );
-  }
+  const sizes = { sm: "h-9 w-9", md: "h-10 w-10", lg: "h-14 w-14" };
+  const photo = src || DEFAULT_AVATAR;
   return (
-    <span
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={photo}
+      alt={name}
+      onError={(e) => {
+        if (e.currentTarget.getAttribute("data-fallback") === "1") return;
+        e.currentTarget.setAttribute("data-fallback", "1");
+        e.currentTarget.src = DEFAULT_AVATAR;
+      }}
       className={cn(
-        "inline-flex items-center justify-center rounded-full bg-nexus-100 font-semibold text-nexus-800 dark:bg-nexus-900 dark:text-nexus-200",
+        "shrink-0 rounded-full bg-sage object-cover ring-2 ring-white dark:ring-nexus-800",
         sizes[size],
         className
       )}
-      aria-label={name}
-    >
-      {initials}
-    </span>
+    />
   );
 }
 

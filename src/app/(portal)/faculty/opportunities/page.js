@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageHeader, FilterBar } from "@/components/ui";
 import { Input, Select, Button } from "@/components/ui";
-import { OpportunityCard, MatchBreakdown } from "@/components/domain/Domain";
+import { OpportunityCard, OpportunityCollection, MatchBreakdown } from "@/components/domain/Domain";
 import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser, useHydrated } from "@/hooks/useApp";
 import { applicationService } from "@/lib/mockServices";
@@ -33,13 +33,13 @@ export default function FacultyOpportunitiesPage() {
   const router = useRouter();
   const opportunities = useAppStore((s) => s.opportunities);
   const matches = useAppStore((s) => s.matches);
-  const toggleSavedOpportunity = useAppStore((s) => s.toggleSavedOpportunity);
 
   const [category, setCategory] = useState("");
   const [q, setQ] = useState("");
   const [department, setDepartment] = useState("");
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [applying, setApplying] = useState(null);
+  const [view, setView] = useState("list");
 
   const userMatches = useMemo(
     () => (user ? getFacultyMatches(matches, user.id) : []),
@@ -89,34 +89,27 @@ export default function FacultyOpportunitiesPage() {
       <p className="text-sm text-secondary">{filtered.length} opportunities · Categories: {Object.keys(FACULTY_OPPORTUNITY_TYPES).join(", ")}</p>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
-          {filtered.map((o) => {
-            const match = userMatches.find((m) => m.opportunityId === o.id);
-            return (
-              <div key={o.id} className="space-y-2">
-                <OpportunityCard opportunity={o} matchScore={match?.overallScore} view="list" />
-                <div className="flex flex-wrap gap-2 px-1">
-                  <Button size="sm" loading={applying === o.id} onClick={() => apply(o)}>Apply</Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => {
-                      toggleSavedOpportunity(o.id);
-                      toast.success("Saved to list");
-                    }}
-                  >
-                    Save
-                  </Button>
-                  {match ? (
-                    <Button size="sm" variant="outline" onClick={() => setSelectedMatch(match)}>
-                      Match breakdown
+        <div className="lg:col-span-2">
+          <OpportunityCollection view={view} onViewChange={setView} count={filtered.length} countLabel="opportunities">
+            {filtered.map((o) => {
+              const match = userMatches.find((m) => m.opportunityId === o.id);
+              return (
+                <OpportunityCard
+                  key={o.id}
+                  opportunity={o}
+                  matchScore={match?.overallScore}
+                  view={view}
+                  onMatchBreakdown={match ? () => setSelectedMatch(match) : undefined}
+                  actions={
+                    <Button size="sm" loading={applying === o.id} onClick={() => apply(o)}>
+                      Apply
                     </Button>
-                  ) : null}
-                </div>
-              </div>
-            );
-          })}
-          {!filtered.length && <p className="text-secondary">No opportunities match your filters.</p>}
+                  }
+                />
+              );
+            })}
+            {!filtered.length && <p className="text-secondary">No opportunities match your filters.</p>}
+          </OpportunityCollection>
         </div>
 
         <aside className="card-surface p-4">

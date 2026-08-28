@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import {
@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { PageHeader, StatCard, ChartCard, SectionHeader } from "@/components/ui";
 import { Button, Badge } from "@/components/ui";
-import { OpportunityCard, ProfileCompletionCard, MatchScoreRing } from "@/components/domain/Domain";
+import { OpportunityCard, OpportunityCollection, ProfileCompletionCard, MatchScoreRing } from "@/components/domain/Domain";
 import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser, useHydrated } from "@/hooks/useApp";
 import { formatDate, formatRelative } from "@/lib/formatters";
@@ -39,6 +39,7 @@ export default function FacultyDashboardPage() {
   const hydrated = useHydrated();
   const user = useCurrentUser();
   const router = useRouter();
+  const [view, setView] = useState("grid");
   const opportunities = useAppStore((s) => s.opportunities);
   const matches = useAppStore((s) => s.matches);
   const applications = useAppStore((s) => s.applications);
@@ -150,13 +151,13 @@ export default function FacultyDashboardPage() {
       </div>
 
       <SectionHeader title="Recommended collaborations" actions={<Link href="/faculty/research" className="text-sm text-nexus-700">Research board</Link>} />
-      <div className="grid gap-4 md:grid-cols-3">
+      <OpportunityCollection view={view} onViewChange={setView} count={collaborations.length} countLabel="collaborations">
         {collaborations.map((o) => {
           const match = userMatches.find((m) => m.opportunityId === o.id);
-          return <OpportunityCard key={o.id} opportunity={o} matchScore={match?.overallScore} />;
+          return <OpportunityCard key={o.id} opportunity={o} matchScore={match?.overallScore} view={view} />;
         })}
         {!collaborations.length && <p className="text-sm text-secondary">No collaboration matches yet.</p>}
-      </div>
+      </OpportunityCollection>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="card-surface p-4">

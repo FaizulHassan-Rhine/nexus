@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/ui";
 import { Button, Input, Textarea, Switch, Badge, StatusBadge } from "@/components/ui";
-import { OpportunityCard, PaymentMilestones, ApplicationTimeline } from "@/components/domain/Domain";
+import { OpportunityCard, OpportunityCollection, PaymentMilestones, ApplicationTimeline } from "@/components/domain/Domain";
 import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser, useHydrated } from "@/hooks/useApp";
 import { applicationService } from "@/lib/mockServices";
@@ -32,6 +32,7 @@ export default function FacultyConsultancyPage() {
   const [coi, setCoi] = useState({ hasConflict: false, details: "", declared: false });
   const [feedback, setFeedback] = useState("");
   const [applying, setApplying] = useState(null);
+  const [view, setView] = useState("grid");
 
   const consultancyOpps = useMemo(
     () => filterFacultyOpportunities(opportunities, { category: "consultancy" }),
@@ -114,11 +115,11 @@ export default function FacultyConsultancyPage() {
         </TabList>
 
         <TabPanel value="marketplace">
-          <div className="grid gap-4 md:grid-cols-2">
+          <OpportunityCollection view={view} onViewChange={setView} count={consultancyOpps.length} countLabel="consultancy roles">
             {consultancyOpps.map((o) => (
-              <OpportunityCard key={o.id} opportunity={o} />
+              <OpportunityCard key={o.id} opportunity={o} view={view} />
             ))}
-          </div>
+          </OpportunityCollection>
         </TabPanel>
 
         <TabPanel value="proposal">
