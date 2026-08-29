@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Bell,
   ChevronDown,
@@ -97,7 +98,78 @@ export function PublicHeader() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const mobileMenu =
+    open && typeof document !== "undefined" ? (
+      <div className="fixed inset-0 z-[80] lg:hidden" role="dialog" aria-modal="true" aria-label="Site menu">
+        <button
+          type="button"
+          className="absolute inset-0 bg-nexus-950/55"
+          aria-label="Close menu"
+          onClick={() => setOpen(false)}
+        />
+        <div className="absolute inset-y-0 right-0 flex h-dvh w-[min(20rem,88vw)] flex-col bg-chrome shadow-2xl dark:bg-nexus-900">
+          <div className="flex h-16 shrink-0 items-center justify-between border-b border-[#d5e3df] px-4 dark:border-nexus-800">
+            <NexusLogo />
+            <IconButton label="Close" onClick={() => setOpen(false)}>
+              <X className="h-4 w-4" />
+            </IconButton>
+          </div>
+          <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-4" aria-label="Mobile">
+            {publicLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "rounded-lg px-3 py-2.5 text-sm font-medium text-nexus-800 hover:bg-ocean hover:text-white dark:text-nexus-100 dark:hover:bg-sky dark:hover:text-nexus-950",
+                  pathname?.startsWith(link.href) && "bg-ocean text-white dark:bg-ocean"
+                )}
+                onClick={() => setOpen(false)}
+              >
+                {t(link.key, language)}
+              </Link>
+            ))}
+            {hydrated && user ? (
+              <Link
+                href={ROLE_DASHBOARDS[user.role] || "/"}
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-nexus-800 hover:bg-ocean hover:text-white dark:text-nexus-100"
+                onClick={() => setOpen(false)}
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-nexus-800 hover:bg-ocean hover:text-white dark:text-nexus-100"
+                onClick={() => setOpen(false)}
+              >
+                {t("nav.login", language)}
+              </Link>
+            )}
+          </nav>
+        </div>
+      </div>
+    ) : null;
+
   return (
+    <>
     <header className="sticky top-0 z-40 border-b border-[#d5e3df] bg-chrome/95 backdrop-blur dark:border-nexus-800 dark:bg-nexus-900/95">
       <div className="page-container grid h-16 grid-cols-[1fr_auto] items-center gap-3 lg:grid-cols-[1fr_auto_1fr]">
         <div className="justify-self-start">
@@ -142,36 +214,9 @@ export function PublicHeader() {
           </IconButton>
         </div>
       </div>
-      {open ? (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button type="button" className="absolute inset-0 bg-slate-950/50" aria-label="Close menu" onClick={() => setOpen(false)} />
-          <div className="absolute top-0 right-0 h-full w-80 max-w-[85vw] bg-chrome p-4 shadow-xl dark:bg-nexus-900">
-            <div className="mb-4 flex items-center justify-between">
-              <NexusLogo />
-              <IconButton label="Close" onClick={() => setOpen(false)}>
-                <X className="h-4 w-4" />
-              </IconButton>
-            </div>
-            <nav className="flex flex-col gap-2">
-              {publicLinks.map((link) => (
-                <Link key={link.href} href={link.href} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-ocean hover:text-white dark:hover:bg-sky dark:hover:text-nexus-950" onClick={() => setOpen(false)}>
-                  {t(link.key, language)}
-                </Link>
-              ))}
-              {hydrated && user ? (
-                <Link href={ROLE_DASHBOARDS[user.role] || "/"} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-ocean hover:text-white" onClick={() => setOpen(false)}>
-                  Dashboard
-                </Link>
-              ) : (
-                <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-ocean hover:text-white" onClick={() => setOpen(false)}>
-                  {t("nav.login", language)}
-                </Link>
-              )}
-            </nav>
-          </div>
-        </div>
-      ) : null}
     </header>
+    {mobileMenu ? createPortal(mobileMenu, document.body) : null}
+    </>
   );
 }
 
