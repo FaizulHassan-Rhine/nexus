@@ -6,7 +6,7 @@ import { cn } from "@/lib/cn";
 
 export { DateInput } from "./DatePicker";
 
-export function DropdownMenu({ trigger, items = [], align = "right" }) {
+export function DropdownMenu({ trigger, items = [], align = "right", className }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -33,12 +33,17 @@ export function DropdownMenu({ trigger, items = [], align = "right" }) {
           role="menu"
           className={cn(
             "absolute z-50 mt-2 min-w-48 overflow-hidden rounded-xl border border-[#d5e3df] bg-cream py-1 shadow-lg dark:border-nexus-700 dark:bg-nexus-900",
-            align === "right" ? "right-0" : "left-0"
+            align === "right" ? "right-0" : "left-0",
+            className
           )}
         >
           {items.map((item, idx) =>
             item.divider ? (
               <div key={`d-${idx}`} className="my-1 border-t border-slate-200 dark:border-slate-700" />
+            ) : item.header ? (
+              <div key={`h-${idx}`} className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                {item.content}
+              </div>
             ) : (
               <button
                 key={item.label}
@@ -69,13 +74,30 @@ export function DropdownMenu({ trigger, items = [], align = "right" }) {
 export function Combobox({ options = [], value, onChange, placeholder = "Search...", label, className }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const ref = useRef(null);
   const filtered = options.filter((o) =>
     String(o.label ?? o).toLowerCase().includes(query.toLowerCase())
   );
   const selected = options.find((o) => (o.value ?? o) === value);
 
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDoc = (e) => {
+      if (!ref.current?.contains(e.target)) setOpen(false);
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
   return (
-    <div className={cn("relative space-y-1.5", className)}>
+    <div className={cn("relative space-y-1.5", className)} ref={ref}>
       {label ? <label className="block text-sm font-medium">{label}</label> : null}
       <div className="relative">
         <Search className="pointer-events-none absolute top-2.5 left-3 h-4 w-4 text-slate-400" />

@@ -83,7 +83,7 @@ export default function LandingPage() {
   const [matchModalOpen, setMatchModalOpen] = useState(false);
 
   const featured = useMemo(
-    () => opportunities.filter((o) => o.featured || o.metrics?.saves > 50).slice(0, 6),
+    () => opportunities.filter((o) => o.featured || o.metrics?.saves > 50).slice(0, 3),
     [opportunities]
   );
 

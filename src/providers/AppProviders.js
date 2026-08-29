@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { Toaster } from "sonner";
+import { AiAssistant } from "@/components/assistant/AiAssistant";
 import { useAppStore } from "@/store/useAppStore";
 import { useHydrated } from "@/hooks/useApp";
 
@@ -34,13 +35,23 @@ export function AppProviders({ children }) {
     <>
       <ThemeSync />
       {children}
+      <AiAssistant />
       <Toaster
-        richColors
         position="top-right"
         closeButton
         dir="ltr"
+        offset={16}
+        gap={10}
         toastOptions={{
+          duration: 4000,
           classNames: {
+            toast: "nexus-toast",
+            title: "nexus-toast-title",
+            description: "nexus-toast-description",
+            success: "nexus-toast-success",
+            error: "nexus-toast-error",
+            info: "nexus-toast-info",
+            warning: "nexus-toast-warning",
             closeButton: "nexus-toast-close",
           },
         }}

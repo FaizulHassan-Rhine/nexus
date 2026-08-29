@@ -11,6 +11,8 @@ import {
   MessageSquare,
   Moon,
   Search,
+  Settings,
+  CircleHelp,
   Sun,
   UserRound,
   X,
@@ -19,7 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { t } from "@/lib/i18n";
-import { DEMO_ACCOUNTS, ROLE_DASHBOARDS } from "@/lib/constants";
+import { ROLE_DASHBOARDS } from "@/lib/constants";
 import { NAV_BY_ROLE } from "@/lib/navigation";
 import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser, useHydrated, useLanguage, useThemePreference } from "@/hooks/useApp";
@@ -35,12 +37,46 @@ export function PrototypeBanner() {
 
 export function ThemeToggle() {
   const { theme, setTheme } = useThemePreference();
-  const next = theme === "dark" ? "light" : theme === "light" ? "system" : "dark";
-  const label = theme === "dark" ? "Dark" : theme === "light" ? "Light" : "System";
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    if (theme === "dark") {
+      setDark(true);
+      return;
+    }
+    if (theme === "light") {
+      setDark(false);
+      return;
+    }
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    setDark(mq.matches);
+  }, [theme]);
+
   return (
-    <IconButton label={`Theme: ${label}. Click to switch`} onClick={() => setTheme(next)}>
-      {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-    </IconButton>
+    <button
+      type="button"
+      role="switch"
+      aria-checked={dark}
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+      onClick={() => setTheme(dark ? "light" : "dark")}
+      className={cn(
+        "relative mx-1 inline-flex h-7 w-14 shrink-0 items-center rounded-full px-0.5 transition-colors duration-300",
+        "shadow-[inset_0_1px_2px_rgba(26,53,82,0.12)]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-600/40",
+        dark
+          ? "bg-gradient-to-b from-sky to-nexus-700"
+          : "bg-gradient-to-b from-[#e4d2a8] to-[#c4a36a]"
+      )}
+    >
+      <Sun className="pointer-events-none absolute left-1.5 h-3.5 w-3.5 text-cream" strokeWidth={2.25} />
+      <Moon className="pointer-events-none absolute right-1.5 h-3.5 w-3.5 text-cream" strokeWidth={2.25} />
+      <span
+        className={cn(
+          "relative z-10 h-6 w-6 rounded-full bg-cream shadow-[0_1px_2px_rgba(26,53,82,0.16)] transition-transform duration-300",
+          dark ? "translate-x-0" : "translate-x-7"
+        )}
+      />
+    </button>
   );
 }
 
@@ -63,25 +99,25 @@ export function PublicHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#d5e3df] bg-chrome/95 backdrop-blur dark:border-nexus-800 dark:bg-nexus-900/95">
-      <div className="page-container flex h-16 items-center justify-between gap-4">
-        <div className="flex items-center gap-6">
+      <div className="page-container grid h-16 grid-cols-[1fr_auto] items-center gap-3 lg:grid-cols-[1fr_auto_1fr]">
+        <div className="justify-self-start">
           <NexusLogo />
-          <nav className="hidden items-center gap-4 lg:flex" aria-label="Primary">
-            {publicLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "text-sm text-slate-600 hover:text-nexus-700 dark:text-slate-300 dark:hover:text-nexus-300",
-                  pathname?.startsWith(link.href) && "font-medium text-nexus-700 dark:text-nexus-300"
-                )}
-              >
-                {t(link.key, language)}
-              </Link>
-            ))}
-          </nav>
         </div>
-        <div className="flex items-center gap-1">
+        <nav className="hidden items-center justify-center gap-5 lg:flex" aria-label="Primary">
+          {publicLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "whitespace-nowrap text-sm text-slate-600 hover:text-nexus-700 dark:text-slate-300 dark:hover:text-nexus-300",
+                pathname?.startsWith(link.href) && "font-medium text-nexus-700 dark:text-nexus-300"
+              )}
+            >
+              {t(link.key, language)}
+            </Link>
+          ))}
+        </nav>
+        <div className="flex items-center justify-end justify-self-end gap-1">
           <Link href="/opportunities" className="hidden sm:inline-flex" aria-label="Search opportunities">
             <IconButton label="Search">
               <Search className="h-4 w-4" />
@@ -95,16 +131,11 @@ export function PublicHeader() {
               </Button>
             </Link>
           ) : (
-            <>
-              <Link href="/login" className="hidden sm:inline-flex">
-                <Button size="sm" variant="secondary">
-                  {t("nav.login", language)}
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button size="sm">{t("nav.join", language)}</Button>
-              </Link>
-            </>
+            <Link href="/login">
+              <Button size="sm" variant="primary">
+                {t("nav.login", language)}
+              </Button>
+            </Link>
           )}
           <IconButton label="Open menu" className="lg:hidden" onClick={() => setOpen(true)}>
             <Menu className="h-5 w-5" />
@@ -127,9 +158,15 @@ export function PublicHeader() {
                   {t(link.key, language)}
                 </Link>
               ))}
-              <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-ocean hover:text-white" onClick={() => setOpen(false)}>
-                {t("nav.login", language)}
-              </Link>
+              {hydrated && user ? (
+                <Link href={ROLE_DASHBOARDS[user.role] || "/"} className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-ocean hover:text-white" onClick={() => setOpen(false)}>
+                  Dashboard
+                </Link>
+              ) : (
+                <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-ocean hover:text-white" onClick={() => setOpen(false)}>
+                  {t("nav.login", language)}
+                </Link>
+              )}
             </nav>
           </div>
         </div>
@@ -311,12 +348,41 @@ function RoleSidebar({ role, collapsed, onNavigate }) {
   );
 }
 
+const ROLE_LABELS = {
+  student: "Student",
+  faculty: "Faculty",
+  researcher: "Researcher",
+  organization: "Organization",
+  "university-admin": "University admin",
+  ugc: "UGC officer",
+  helpdesk: "Helpdesk",
+};
+
+function profilePath(role) {
+  if (role === "faculty") return "/faculty/profile";
+  if (role === "researcher") return "/researcher/profile";
+  if (role === "organization") return "/organization/profile";
+  if (role === "university-admin") return "/university-admin/institution-profile";
+  return `/${role === "university-admin" ? "university-admin" : role}/settings`;
+}
+
+function profileMeta(user, university, organization) {
+  if (user.role === "student") {
+    return [university?.shortName, user.department, user.studentId].filter(Boolean).join(" · ");
+  }
+  if (user.role === "organization") {
+    return [user.designation, organization?.name || organization?.shortName].filter(Boolean).join(" · ");
+  }
+  return [user.designation, university?.shortName, user.department].filter(Boolean).join(" · ");
+}
+
 export function PortalShell({ role, children, title }) {
   const user = useCurrentUser();
   const hydrated = useHydrated();
   const router = useRouter();
   const logout = useAppStore((s) => s.logout);
-  const switchDemoRole = useAppStore((s) => s.switchDemoRole);
+  const universities = useAppStore((s) => s.universities);
+  const organizations = useAppStore((s) => s.organizations);
   const notifications = useAppStore((s) => s.notifications);
   const setUiPreferences = useAppStore((s) => s.setUiPreferences);
   const collapsed = useAppStore((s) => s.uiPreferences.sidebarCollapsed);
@@ -347,6 +413,9 @@ export function PortalShell({ role, children, title }) {
   }, [hydrated, user, role, router]);
 
   const unread = notifications.filter((n) => !n.read && (!user || n.userId === user.id || !n.userId)).length;
+  const university = user ? universities.find((u) => u.id === user.universityId) : null;
+  const organization = user ? organizations.find((o) => o.id === user.organizationId) : null;
+  const userMeta = user ? profileMeta(user, university, organization) : "";
 
   if (!hydrated || !user || user.role !== role) {
     return (
@@ -429,34 +498,45 @@ export function PortalShell({ role, children, title }) {
               </Link>
               <ThemeToggle />
               <DropdownMenu
+                className="min-w-72"
                 trigger={
                   <button type="button" className="inline-flex items-center gap-2 rounded-full border border-slate-200 py-1 pr-2 pl-1 text-sm dark:border-slate-700">
-                    <Avatar name={user.name} size="sm" />
+                    <Avatar name={user.name} src={user.avatar} size="sm" />
                     <span className="hidden max-w-[120px] truncate md:inline">{user.name}</span>
                     <ChevronDown className="h-3.5 w-3.5" />
                   </button>
                 }
                 items={[
                   {
-                    label: t("nav.switchRole", language),
-                    icon: <UserRound className="h-4 w-4" />,
-                    onClick: () => {},
-                    disabled: true,
+                    header: true,
+                    content: (
+                      <div className="flex items-start gap-3">
+                        <Avatar name={user.name} src={user.avatar} size="md" />
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-nexus-900 dark:text-cream">{user.name}</p>
+                          <p className="truncate text-xs text-secondary">{user.email}</p>
+                          <p className="mt-1 text-xs font-medium text-nexus-700 dark:text-nexus-300">
+                            {ROLE_LABELS[user.role] || user.role}
+                          </p>
+                          {userMeta ? <p className="mt-0.5 truncate text-[11px] text-secondary">{userMeta}</p> : null}
+                        </div>
+                      </div>
+                    ),
                   },
-                  ...DEMO_ACCOUNTS.map((acc) => ({
-                    label: `${acc.name} (${acc.role})`,
-                    onClick: () => {
-                      const res = switchDemoRole(acc.email);
-                      if (res.ok) router.push(res.redirect);
-                    },
-                  })),
                   { divider: true },
                   {
+                    label: "View profile",
+                    icon: <UserRound className="h-4 w-4" />,
+                    onClick: () => router.push(profilePath(role)),
+                  },
+                  {
                     label: t("nav.settings", language),
+                    icon: <Settings className="h-4 w-4" />,
                     onClick: () => router.push(`/${role === "university-admin" ? "university-admin" : role}/settings`),
                   },
                   {
                     label: t("nav.help", language),
+                    icon: <CircleHelp className="h-4 w-4" />,
                     onClick: () => router.push("/help"),
                   },
                   { divider: true },

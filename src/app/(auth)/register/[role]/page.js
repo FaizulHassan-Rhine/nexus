@@ -294,7 +294,7 @@ export default function RegisterRolePage() {
   };
 
   const passwordFields = (
-    <>
+    <div className="space-y-4 sm:col-span-2">
       <div className="relative">
         <Input
           label="Password"
@@ -323,57 +323,71 @@ export default function RegisterRolePage() {
         />
         {errors.privacy ? <p className="text-xs text-danger">{errors.privacy}</p> : null}
       </div>
-    </>
+    </div>
+  );
+
+  const universityField = (
+    <div>
+      <Combobox
+        label={role === "researcher" ? "University / institute affiliation" : "University"}
+        options={uniOptions}
+        value={universityId}
+        onChange={setUniversityId}
+        placeholder={role === "researcher" ? "Search affiliations…" : "Search universities…"}
+      />
+      {errors.universityId ? <p className="mt-1.5 text-xs text-danger">{errors.universityId}</p> : null}
+    </div>
   );
 
   return (
-    <AuthCard title={meta.title} subtitle={meta.subtitle} className="max-w-xl">
+    <AuthCard title={meta.title} subtitle={meta.subtitle} className="max-w-4xl">
       <Link href="/register" className="mb-4 inline-flex items-center gap-1 text-sm text-nexus-700 hover:underline dark:text-nexus-300">
         <ArrowLeft className="h-4 w-4" /> All roles
       </Link>
 
       {role === "student" ? (
-        <form onSubmit={handleStudentSubmit} className="space-y-4">
+        <form onSubmit={handleStudentSubmit} className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
           <Input label="Full name (English)" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="Ayesha Rahman" />
           <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} required placeholder="you@std.buet.ac.bd" />
           <Input label="Mobile" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} required placeholder="+8801712345678" hint="Bangladesh mobile number" />
-          <Combobox label="University" options={uniOptions} value={universityId} onChange={setUniversityId} placeholder="Search universities…" />
-          {errors.universityId ? <p className="text-xs text-danger">{errors.universityId}</p> : null}
+          {universityField}
           <Input label="Student ID" value={studentId} onChange={(e) => setStudentId(e.target.value)} error={errors.studentId} required placeholder="BUET/CSE/2023/042" />
           <Input label="Programme" value={programme} onChange={(e) => setProgramme(e.target.value)} error={errors.programme} required placeholder="BSc in Computer Science and Engineering" />
-          <Select label="Department" options={DISCIPLINES.map((d) => ({ value: d, label: d }))} value={department} onChange={(e) => setDepartment(e.target.value)} error={errors.department} placeholder="Select department" required />
-          <div className="grid grid-cols-2 gap-4">
-            <Select label="Year" options={YEAR_OPTIONS} value={currentYear} onChange={(e) => setCurrentYear(e.target.value)} error={errors.currentYear} placeholder="Year" required />
-            <Select label="Semester" options={SEMESTER_OPTIONS} value={currentSemester} onChange={(e) => setCurrentSemester(e.target.value)} error={errors.currentSemester} placeholder="Semester" required />
+          <div className="sm:col-span-2">
+            <Select label="Department" options={DISCIPLINES.map((d) => ({ value: d, label: d }))} value={department} onChange={(e) => setDepartment(e.target.value)} error={errors.department} placeholder="Select department" required />
           </div>
+          <Select label="Year" options={YEAR_OPTIONS} value={currentYear} onChange={(e) => setCurrentYear(e.target.value)} error={errors.currentYear} placeholder="Year" required />
+          <Select label="Semester" options={SEMESTER_OPTIONS} value={currentSemester} onChange={(e) => setCurrentSemester(e.target.value)} error={errors.currentSemester} placeholder="Semester" required />
           {passwordFields}
-          <Button type="submit" className="w-full" loading={loading}>Create student account</Button>
+          <Button type="submit" className="w-full sm:col-span-2" loading={loading}>Create student account</Button>
         </form>
       ) : null}
 
       {role === "faculty" ? (
-        <form onSubmit={handleFacultySubmit} className="space-y-4">
+        <form onSubmit={handleFacultySubmit} className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
           <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="Dr. Rafiqul Islam" />
           <Input label="Institutional email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} required placeholder="rafiqul@cse.buet.ac.bd" />
           <Input label="Mobile" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} required />
-          <Combobox label="University" options={uniOptions} value={universityId} onChange={setUniversityId} placeholder="Search universities…" />
-          {errors.universityId ? <p className="text-xs text-danger">{errors.universityId}</p> : null}
+          {universityField}
           <Input label="Employee ID" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} error={errors.employeeId} required placeholder="BUET/FAC/2010/088" />
           <Select label="Designation" options={FACULTY_DESIGNATIONS.map((d) => ({ value: d, label: d }))} value={designation} onChange={(e) => setDesignation(e.target.value)} error={errors.designation} placeholder="Select designation" required />
-          <Select label="Department" options={DISCIPLINES.map((d) => ({ value: d, label: d }))} value={department} onChange={(e) => setDepartment(e.target.value)} error={errors.department} placeholder="Department" required />
-          <Textarea label="Research interests" value={researchInterests} onChange={(e) => setResearchInterests(e.target.value)} error={errors.researchInterests} required placeholder="Machine Learning, NLP, Healthcare Informatics" hint="Comma-separated areas" />
+          <div className="sm:col-span-2">
+            <Select label="Department" options={DISCIPLINES.map((d) => ({ value: d, label: d }))} value={department} onChange={(e) => setDepartment(e.target.value)} error={errors.department} placeholder="Department" required />
+          </div>
+          <div className="sm:col-span-2">
+            <Textarea label="Research interests" value={researchInterests} onChange={(e) => setResearchInterests(e.target.value)} error={errors.researchInterests} required placeholder="Machine Learning, NLP, Healthcare Informatics" hint="Comma-separated areas" />
+          </div>
           {passwordFields}
-          <Button type="submit" className="w-full" loading={loading}>Create faculty account</Button>
+          <Button type="submit" className="w-full sm:col-span-2" loading={loading}>Create faculty account</Button>
         </form>
       ) : null}
 
       {role === "researcher" ? (
-        <form onSubmit={handleResearcherSubmit} className="space-y-4">
+        <form onSubmit={handleResearcherSubmit} className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
           <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="Dr. Nasreen Chowdhury" />
           <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} required placeholder="nasreen@research.buet.ac.bd" />
           <Input label="Mobile" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} required />
-          <Combobox label="University / institute affiliation" options={uniOptions} value={universityId} onChange={setUniversityId} placeholder="Search affiliations…" />
-          {errors.universityId ? <p className="text-xs text-danger">{errors.universityId}</p> : null}
+          {universityField}
           <Select
             label="Affiliation type"
             options={[
@@ -385,9 +399,11 @@ export default function RegisterRolePage() {
             onChange={(e) => setAffiliationType(e.target.value)}
           />
           <Input label="ORCID iD" value={orcid} onChange={(e) => setOrcid(e.target.value)} error={errors.orcid} placeholder="0000-0002-1825-0097" />
-          <Textarea label="Research areas" value={researchInterests} onChange={(e) => setResearchInterests(e.target.value)} error={errors.researchInterests} required placeholder="Climate resilience, public health data, Bangla NLP" hint="Comma-separated areas" />
+          <div className="sm:col-span-2">
+            <Textarea label="Research areas" value={researchInterests} onChange={(e) => setResearchInterests(e.target.value)} error={errors.researchInterests} required placeholder="Climate resilience, public health data, Bangla NLP" hint="Comma-separated areas" />
+          </div>
           {passwordFields}
-          <Button type="submit" className="w-full" loading={loading}>Create researcher account</Button>
+          <Button type="submit" className="w-full sm:col-span-2" loading={loading}>Create researcher account</Button>
         </form>
       ) : null}
 
@@ -402,20 +418,20 @@ export default function RegisterRolePage() {
               <Select label="Organization type" options={ORGANIZATION_TYPES.map((t) => ({ value: t, label: t }))} value={orgType} onChange={(e) => setOrgType(e.target.value)} error={errors.orgType} placeholder="Select type" required />
             ) : null}
             {orgStep === 1 ? (
-              <>
+              <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
                 <Input label="Organization name" value={orgName} onChange={(e) => setOrgName(e.target.value)} error={errors.orgName} required placeholder="Grameen Digital Ltd." />
                 <Select label="Head office division" options={DIVISIONS.map((d) => ({ value: d, label: d }))} value={orgDivision} onChange={(e) => setOrgDivision(e.target.value)} error={errors.orgDivision} placeholder="Division" required />
                 <Input label="Website" value={orgWebsite} onChange={(e) => setOrgWebsite(e.target.value)} placeholder="https://example.com.bd" />
                 <Input label="Contact email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} required />
                 <Input label="Contact phone" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} required />
-              </>
+              </div>
             ) : null}
             {orgStep === 2 ? (
-              <>
+              <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
                 <Input label="Representative name" value={repName} onChange={(e) => setRepName(e.target.value)} error={errors.repName} required />
                 <Input label="Representative designation" value={repDesignation} onChange={(e) => setRepDesignation(e.target.value)} error={errors.repDesignation} required placeholder="HR Manager" />
                 <Input label="Your login name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required />
-              </>
+              </div>
             ) : null}
             {orgStep === 3 ? (
               <>
@@ -426,9 +442,11 @@ export default function RegisterRolePage() {
             {orgStep === 4 ? (
               <div className="space-y-2">
                 <p className="text-sm font-medium">Hiring & partnership interests</p>
-                {OPPORTUNITY_TYPES.slice(0, 12).map((item) => (
-                  <Checkbox key={item} label={item} checked={orgInterests.includes(item)} onChange={() => toggleOrgInterest(item)} />
-                ))}
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {OPPORTUNITY_TYPES.slice(0, 12).map((item) => (
+                    <Checkbox key={item} label={item} checked={orgInterests.includes(item)} onChange={() => toggleOrgInterest(item)} />
+                  ))}
+                </div>
                 {errors.orgInterests ? <p className="text-xs text-danger">{errors.orgInterests}</p> : null}
               </div>
             ) : null}
@@ -453,20 +471,21 @@ export default function RegisterRolePage() {
       ) : null}
 
       {role === "university-admin" ? (
-        <form onSubmit={handleUniAdminSubmit} className="space-y-4">
+        <form onSubmit={handleUniAdminSubmit} className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
           <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required />
-          <Combobox label="University" options={uniOptions} value={universityId} onChange={setUniversityId} placeholder="Search universities…" />
-          {errors.universityId ? <p className="text-xs text-danger">{errors.universityId}</p> : null}
+          {universityField}
           <Input label="Office / unit" value={office} onChange={(e) => setOffice(e.target.value)} error={errors.office} required placeholder="Office of the Registrar / IQAC / Career Services" />
           <Input label="Designation" value={uniAdminDesignation} onChange={(e) => setUniAdminDesignation(e.target.value)} error={errors.uniAdminDesignation} required placeholder="Deputy Registrar" />
           <Input label="Official email" type="email" value={officialEmail} onChange={(e) => setOfficialEmail(e.target.value)} error={errors.officialEmail} required placeholder="karim.hossain@buet.ac.bd" hint="Must be @ac.bd institutional domain" />
           <Input label="Mobile" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} required />
           <Input label="Employee ID" value={adminEmployeeId} onChange={(e) => setAdminEmployeeId(e.target.value)} error={errors.adminEmployeeId} required />
-          <FileUploader label="Authorization letter from VC / Registrar" accept=".pdf" value={authDoc} onChange={setAuthDoc} onRemove={() => setAuthDoc(null)} />
-          {errors.authDoc ? <p className="text-xs text-danger">{errors.authDoc}</p> : null}
+          <div className="sm:col-span-2">
+            <FileUploader label="Authorization letter from VC / Registrar" accept=".pdf" value={authDoc} onChange={setAuthDoc} onRemove={() => setAuthDoc(null)} />
+            {errors.authDoc ? <p className="mt-1.5 text-xs text-danger">{errors.authDoc}</p> : null}
+          </div>
           {passwordFields}
-          <p className="text-xs text-secondary">Submission enters <strong>approval pending</strong> until verified by UGC programme office.</p>
-          <Button type="submit" className="w-full" loading={loading}>Submit for approval</Button>
+          <p className="text-xs text-secondary sm:col-span-2">Submission enters <strong>approval pending</strong> until verified by UGC programme office.</p>
+          <Button type="submit" className="w-full sm:col-span-2" loading={loading}>Submit for approval</Button>
         </form>
       ) : null}
 

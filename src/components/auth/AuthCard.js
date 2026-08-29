@@ -24,7 +24,7 @@ export function AuthCard({ title, subtitle, children, className, badge }) {
 
 export function AuthCardWide({ title, subtitle, children, className }) {
   return (
-    <AuthCard title={title} subtitle={subtitle} className={cn("max-w-3xl", className)}>
+    <AuthCard title={title} subtitle={subtitle} className={cn("max-w-4xl", className)}>
       {children}
     </AuthCard>
   );
