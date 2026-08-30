@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { IconButton } from "./Button";
+import { LuxurySpinner } from "@/components/brand/LuxuryLoader";
 
 export function Modal({ open, onClose, title, description, children, className, size = "md" }) {
   useEffect(() => {
@@ -75,11 +76,18 @@ export function ConfirmDialog({
           disabled={loading}
           onClick={onConfirm}
           className={cn(
-            "h-10 rounded-lg px-4 text-sm font-medium text-white disabled:opacity-60",
+            "inline-flex h-10 items-center gap-2 rounded-lg px-4 text-sm font-medium text-white disabled:opacity-60",
             danger ? "bg-danger hover:bg-red-800" : "bg-nexus-600 hover:bg-nexus-700"
           )}
         >
-          {loading ? "Working..." : confirmLabel}
+          {loading ? (
+            <>
+              <LuxurySpinner size={14} />
+              Working...
+            </>
+          ) : (
+            confirmLabel
+          )}
         </button>
       </div>
     </Modal>

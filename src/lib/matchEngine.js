@@ -3,20 +3,37 @@ export function scoreStudentOpportunity(student, opportunity) {
     return emptyScore("Missing profile or opportunity");
   }
 
-  const studentSkills = normalizeList(student.skills).map((s) => s.toLowerCase());
+  const studentLangs = normalizeList(student.languages).map((s) => s.toLowerCase());
+  const requiredLangs = normalizeList(opportunity.requiredLanguages).map((s) => s.toLowerCase());
+  const preferredLangs = normalizeList(opportunity.preferredLanguages).map((s) => s.toLowerCase());
+  const requiredLangHits = requiredLangs.filter((lang) => studentLangs.some((s) => s.includes(lang) || lang.includes(s))).length;
+  const preferredLangHits = preferredLangs.filter((lang) => studentLangs.some((s) => s.includes(lang) || lang.includes(s))).length;
+  const languageScore = requiredLangs.length
+    ? (requiredLangHits / requiredLangs.length) * 5 + (preferredLangs.length ? (preferredLangHits / preferredLangs.length) * 2 : 1)
+    : studentLangs.length
+      ? 4
+      : 2;
+
+  const studentSkills = normalizeList(student.skills)
+    .concat(normalizeList(student.languages))
+    .map((s) => s.toLowerCase());
   const required = normalizeList(opportunity.requiredSkills).map((s) => s.toLowerCase());
   const preferred = normalizeList(opportunity.preferredSkills).map((s) => s.toLowerCase());
 
   const requiredHits = required.filter((s) => studentSkills.includes(s)).length;
   const preferredHits = preferred.filter((s) => studentSkills.includes(s)).length;
-  const requiredScore = required.length ? (requiredHits / required.length) * 18 : 14;
-  const preferredScore = preferred.length ? (preferredHits / preferred.length) * 7 : 5;
-  const skills = clamp(requiredScore + preferredScore, 0, 25);
+  const requiredScore = required.length ? (requiredHits / required.length) * 16 : 12;
+  const preferredScore = preferred.length ? (preferredHits / preferred.length) * 5 : 4;
+  const skills = clamp(requiredScore + preferredScore + languageScore * 0.4, 0, 25);
 
+  const instType = String(student.institutionType || "university").toLowerCase();
+  const eligibleTypes = normalizeList(opportunity.eligibleInstitutionTypes).map((t) => String(t).toLowerCase());
+  const institutionOk = !eligibleTypes.length || eligibleTypes.includes(instType);
   const yearOk =
     !opportunity.targetStudyYears?.length ||
     opportunity.targetStudyYears.includes(student.currentYear) ||
-    opportunity.targetStudyYears.includes(String(student.currentYear));
+    opportunity.targetStudyYears.includes(String(student.currentYear)) ||
+    opportunity.targetStudyYears.includes(Number(student.currentYear));
   const deptOk =
     !opportunity.departments?.length ||
     opportunity.departments.some((d) => equalsLoose(d, student.department) || equalsLoose(d, student.programme));
@@ -24,7 +41,7 @@ export function scoreStudentOpportunity(student, opportunity) {
   const cgpaScore = cgpa >= 3.5 ? 6 : cgpa >= 3.0 ? 4 : cgpa > 0 ? 2 : 3;
   const certCount = (student.certifications?.length || 0) + (student.documents?.length ? 1 : 0);
   const certScore = clamp(certCount * 2, 0, 4);
-  const qualifications = clamp((yearOk ? 5 : 2) + (deptOk ? 4 : 1) + cgpaScore + certScore, 0, 18);
+  const qualifications = clamp((yearOk ? 4 : 2) + (deptOk ? 3 : 1) + (institutionOk ? 3 : 0) + cgpaScore + certScore, 0, 18);
 
   const interests = normalizeList(student.interests).concat(normalizeList(student.careerGoals)).map((s) => s.toLowerCase());
   const trackHits = normalizeList(opportunity.careerTracks)
@@ -34,7 +51,8 @@ export function scoreStudentOpportunity(student, opportunity) {
   const typePreferred = normalizeList(student.preferredOpportunityTypes).some((t) =>
     equalsLoose(t, opportunity.type)
   );
-  const preferences = clamp((trackHits > 0 ? 8 : 3) + (typePreferred ? 4 : 1), 0, 12);
+  const languagePreferred = requiredLangHits > 0 || (!requiredLangs.length && studentLangs.includes("english"));
+  const preferences = clamp((trackHits > 0 ? 7 : 3) + (typePreferred ? 3 : 1) + (languagePreferred ? 2 : 0), 0, 12);
 
   const eligibleUnis = normalizeList(opportunity.eligibleUniversityIds).concat(
     normalizeList(opportunity.partnerUniversityIds)
@@ -59,14 +77,18 @@ export function scoreStudentOpportunity(student, opportunity) {
   const projectHits = projectReqs.filter((r) => portfolioText.includes(r) || r.split(" ").some((w) => portfolioText.includes(w))).length;
   const projectRequirements = clamp(projectReqs.length ? (projectHits / projectReqs.length) * 10 : 5, 0, 10);
 
+  const geo = String(opportunity.geographicScope || "").toLowerCase();
+  const internationalRemote = geo === "international-remote" || (equalsLoose(opportunity.workMode, "Remote") && !equalsLoose(opportunity.country || "Bangladesh", "Bangladesh"));
   const locationOk =
     equalsLoose(opportunity.workMode, "Remote") ||
+    internationalRemote ||
     equalsLoose(opportunity.division, student.locationPreferences?.[0]) ||
     equalsLoose(opportunity.location, student.preferredLocation) ||
-    normalizeList(student.locationPreferences).some((l) => equalsLoose(l, opportunity.division) || equalsLoose(l, opportunity.location));
+    normalizeList(student.locationPreferences).some((l) => equalsLoose(l, opportunity.division) || equalsLoose(l, opportunity.location) || equalsLoose(l, "Remote"));
   const modeOk =
     !student.workModePreferences?.length ||
-    student.workModePreferences.some((m) => equalsLoose(m, opportunity.workMode));
+    student.workModePreferences.some((m) => equalsLoose(m, opportunity.workMode)) ||
+    (internationalRemote && student.workModePreferences.some((m) => equalsLoose(m, "Remote")));
   const location = clamp((locationOk ? 4 : 1) + (modeOk ? 3 : 1), 0, 7);
 
   const weekly = Number(opportunity.weeklyHours) || 20;
@@ -111,7 +133,9 @@ export function scoreStudentOpportunity(student, opportunity) {
   if (affiliation >= 6) reasons.push("Institutional affiliation aligns with opportunity partners");
   if (projectRequirements >= 6) reasons.push("Portfolio and projects match stated requirements");
   if (location >= 5) reasons.push("Location and work mode fit preferences");
-  if (ugcSupported) reasons.push("Includes UGC co-funding or support pathway");
+  if (requiredLangs.length && requiredLangHits === requiredLangs.length) reasons.push("Language proficiency matches the role");
+  if (internationalRemote) reasons.push("Open to international remote work matching this listing");
+  if (institutionOk && eligibleTypes.length) reasons.push("Institution type is eligible for this opportunity");
 
   required
     .filter((s) => !studentSkills.includes(s))
@@ -119,7 +143,16 @@ export function scoreStudentOpportunity(student, opportunity) {
       gaps.push(`Missing required skill: ${s}`);
       recommendedActions.push(`Complete a short course covering ${s}`);
     });
+  if (!institutionOk) gaps.push("This listing targets a different institution type");
   if (!yearOk) gaps.push("Study year is outside the stated target range");
+  if (requiredLangs.length && requiredLangHits < requiredLangs.length) {
+    requiredLangs
+      .filter((lang) => !studentLangs.some((s) => s.includes(lang) || lang.includes(s)))
+      .forEach((lang) => {
+        gaps.push(`Missing required language: ${lang}`);
+        recommendedActions.push(`Enrol in a ${lang} language course on Nexus`);
+      });
+  }
   if (!deptOk) gaps.push("Department/programme is not in the primary target list");
   if (schedule < 4) recommendedActions.push("Adjust weekly availability or seek a lower-hour opportunity");
   if (!student.documents?.length) recommendedActions.push("Upload CV and transcript to strengthen applications");
@@ -140,7 +173,7 @@ export function scoreStudentOpportunity(student, opportunity) {
     reasons,
     gaps,
     recommendedActions,
-    algorithmVersion: "nexus-match-v2",
+    algorithmVersion: "nexus-match-v3",
   };
 }
 

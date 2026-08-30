@@ -4,14 +4,14 @@ export const REGISTERABLE_ROLES = [
   {
     id: "student",
     title: "Student",
-    description: "Find internships, scholarships, courses, and project funding across Bangladesh.",
+    description: "Join from a university, college, school, madrasa, polytechnic, or other recognized institution.",
     icon: "🎓",
     href: "/register/student",
   },
   {
     id: "faculty",
     title: "Faculty",
-    description: "Discover research grants, exchange programmes, consultancy, and industry collaboration.",
+    description: "University faculty and school, college, or madrasa teachers — research, teaching, exchange, and student support.",
     icon: "📚",
     href: "/register/faculty",
   },
@@ -23,18 +23,32 @@ export const REGISTERABLE_ROLES = [
     href: "/register/researcher",
   },
   {
+    id: "university-admin",
+    title: "Educational institution",
+    description: "University, college, school, madrasa, polytechnic, and training-institute administrators.",
+    icon: "🏛️",
+    href: "/register/university-admin",
+  },
+  {
     id: "organization",
-    title: "Organization",
-    description: "Post opportunities, hire talent, and access UGC co-funding programmes.",
+    title: "Company / organization",
+    description: "Post jobs, internships, courses, and industry–academia partnerships.",
     icon: "🏢",
     href: "/register/organization",
   },
   {
-    id: "university-admin",
-    title: "University Admin",
-    description: "Verify profiles, approve matches, and manage institutional workflows.",
-    icon: "🏛️",
-    href: "/register/university-admin",
+    id: "training-provider",
+    title: "Training provider",
+    description: "Offer bootcamps, language courses, certifications, and professional training.",
+    icon: "🧭",
+    href: "/register/organization?type=Training%20provider",
+  },
+  {
+    id: "industry-professional",
+    title: "Industry professional",
+    description: "Discover talent, mentor learners, and explore local or international remote opportunities.",
+    icon: "💼",
+    href: "/register/industry-professional",
   },
 ];
 
@@ -82,6 +96,14 @@ export const FACULTY_DESIGNATIONS = [
   "Professor",
   "Adjunct Faculty",
   "Research Fellow",
+  "Instructor",
+  "Clinical Faculty",
+  "Assistant Teacher",
+  "Teacher",
+  "Senior Teacher",
+  "Head Teacher / Principal",
+  "Vice Principal",
+  "Subject Coordinator",
 ];
 
 export const SKILL_OPTIONS = [

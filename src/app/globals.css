@@ -279,3 +279,146 @@
 .dark [data-sonner-toast][data-styled='true'] [data-close-button] {
   color: #c8dfdb !important;
 }
+
+/* Luxury loader */
+.lux-spin {
+  animation: lux-spin 1.35s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  transform-origin: 50% 50%;
+}
+
+.lux-spin-rev {
+  animation: lux-spin-rev 2.4s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+.lux-breathe {
+  animation: lux-breathe 2.8s ease-in-out infinite;
+}
+
+.lux-glow {
+  animation: lux-glow 2.8s ease-in-out infinite;
+}
+
+.lux-shimmer {
+  animation: lux-shimmer 1.6s ease-in-out infinite;
+}
+
+.lux-rise {
+  animation: lux-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.lux-overlay {
+  animation: lux-overlay-in 0.35s ease-out both;
+}
+
+.lux-overlay-exit {
+  animation: lux-overlay-out 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
+.lux-progress {
+  pointer-events: none;
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 100;
+  height: 2px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.lux-progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #3368a0 0%, #d4bc7d 55%, #b8893d 100%);
+  box-shadow: 0 0 12px rgba(212, 188, 125, 0.55);
+}
+
+.lux-progress-active {
+  opacity: 1;
+}
+
+.lux-progress-active span {
+  animation: lux-bar 0.72s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes lux-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes lux-spin-rev {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes lux-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.045);
+  }
+}
+
+@keyframes lux-glow {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes lux-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(280%);
+  }
+}
+
+@keyframes lux-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lux-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lux-overlay-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes lux-bar {
+  0% {
+    width: 0;
+  }
+  35% {
+    width: 58%;
+  }
+  100% {
+    width: 100%;
+  }
+}

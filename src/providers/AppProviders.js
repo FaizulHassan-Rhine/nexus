@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { Toaster } from "sonner";
 import { AiAssistant } from "@/components/assistant/AiAssistant";
+import { HydrationOverlay, RouteProgress } from "@/components/brand/LuxuryLoader";
 import { useAppStore } from "@/store/useAppStore";
 import { useHydrated } from "@/hooks/useApp";
 
@@ -34,6 +35,8 @@ export function AppProviders({ children }) {
   return (
     <>
       <ThemeSync />
+      <HydrationOverlay />
+      <RouteProgress />
       {children}
       <AiAssistant />
       <Toaster

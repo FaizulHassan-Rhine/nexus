@@ -180,9 +180,11 @@ export const researcherNav = [
 
 export const NAV_BY_ROLE = {
   student: studentNav,
+  teacher: facultyNav,
   faculty: facultyNav,
   researcher: researcherNav,
   organization: organizationNav,
+  "industry-professional": studentNav,
   "university-admin": universityNav,
   ugc: ugcNav,
   helpdesk: helpdeskNav,

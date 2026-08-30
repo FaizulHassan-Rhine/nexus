@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { AuthCard } from "@/components/auth/AuthCard";
+import { IdentityVerificationFields } from "@/components/auth/IdentityVerification";
 import {
   Button,
   Input,
@@ -23,20 +24,28 @@ import {
   DIVISIONS,
   ORGANIZATION_TYPES,
   OPPORTUNITY_TYPES,
-  YEAR_OPTIONS,
-  SEMESTER_OPTIONS,
   FACULTY_DESIGNATIONS,
 } from "@/components/auth/authOptions";
 import { email as validateEmail, password as validatePassword, required } from "@/lib/validators";
+import {
+  INSTITUTION_TYPES,
+  filterInstitutionsByType,
+  getStudentFieldConfig,
+} from "@/lib/ecosystem";
 
 const ROLE_META = {
-  student: { title: "Student registration", subtitle: "Join as a student from any Bangladeshi university." },
-  faculty: { title: "Faculty registration", subtitle: "Register with your institutional credentials." },
+  student: { title: "Student registration", subtitle: "Join from any recognized educational institution in Bangladesh — university, college, school, madrasa, polytechnic, and more." },
+  teacher: { title: "Faculty registration", subtitle: "University faculty and school, college, or madrasa teachers — research, teaching, exchange, and student support." },
+  faculty: { title: "Faculty registration", subtitle: "University faculty and school, college, or madrasa teachers — research, teaching, exchange, and student support." },
   researcher: { title: "Researcher registration", subtitle: "Independent and affiliated researchers pursuing grants, collaboration, and technology transfer." },
-  organization: { title: "Organization registration", subtitle: "Companies, startups, NGOs, and training providers." },
+  organization: { title: "Organization registration", subtitle: "Companies, startups, NGOs, training providers, and industry partners." },
   "university-admin": {
-    title: "University admin registration",
-    subtitle: "Registrar, IQAC, or career services focal points.",
+    title: "Institution administrator registration",
+    subtitle: "Registrar, principal, IQAC, or career-services focal points for universities and other educational institutions.",
+  },
+  "industry-professional": {
+    title: "Industry professional registration",
+    subtitle: "Mentors, practitioners, and specialists exploring talent, collaboration, and local or international remote work.",
   },
 };
 
@@ -48,9 +57,12 @@ function validatePhone(value) {
   return "";
 }
 
-export default function RegisterRolePage() {
+const TEACHING_FOCUSED_TYPES = new Set(["school", "madrasa", "technical", "training"]);
+
+function RegisterRolePageContent() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const role = params.role;
   const universities = useAppStore((s) => s.universities);
   const meta = ROLE_META[role];
@@ -74,6 +86,13 @@ export default function RegisterRolePage() {
   const [department, setDepartment] = useState("");
   const [currentYear, setCurrentYear] = useState("");
   const [currentSemester, setCurrentSemester] = useState("");
+  const [institutionType, setInstitutionType] = useState(role === "student" ? "university" : "university");
+  const [customInstitution, setCustomInstitution] = useState("");
+  const [identityType, setIdentityType] = useState("");
+  const [identityNumber, setIdentityNumber] = useState("");
+  const [employer, setEmployer] = useState("");
+  const [yearsExperience, setYearsExperience] = useState("");
+  const [professionalSkills, setProfessionalSkills] = useState("");
 
   // Faculty
   const [employeeId, setEmployeeId] = useState("");
@@ -84,7 +103,7 @@ export default function RegisterRolePage() {
 
   // Organization multi-step
   const [orgStep, setOrgStep] = useState(0);
-  const [orgType, setOrgType] = useState("");
+  const [orgType, setOrgType] = useState(searchParams.get("type") || "");
   const [orgName, setOrgName] = useState("");
   const [orgDivision, setOrgDivision] = useState("");
   const [orgWebsite, setOrgWebsite] = useState("");
@@ -102,12 +121,25 @@ export default function RegisterRolePage() {
   const [authDoc, setAuthDoc] = useState(null);
 
   useEffect(() => {
+    if (role === "teacher") {
+      router.replace("/register/faculty");
+      return;
+    }
     if (!meta) router.replace("/register");
-  }, [meta, router]);
+  }, [meta, role, router]);
 
-  if (!meta) return null;
+  const studentFields = getStudentFieldConfig(institutionType);
+  const uniOptions = useMemo(() => {
+    const list = role === "student" || role === "faculty" || role === "university-admin"
+      ? filterInstitutionsByType(universities, institutionType)
+      : universities;
+    const source = list.length ? list : universities;
+    return source.map((u) => ({ value: u.id, label: `${u.shortName} — ${u.name}` }));
+  }, [universities, institutionType, role]);
 
-  const uniOptions = universities.map((u) => ({ value: u.id, label: `${u.shortName} — ${u.name}` }));
+  if (!meta || role === "teacher") return null;
+
+  const isTeachingFocused = TEACHING_FOCUSED_TYPES.has(institutionType);
 
   const validateCommon = () => ({
     name: required(name, "Full name"),
@@ -118,23 +150,33 @@ export default function RegisterRolePage() {
     privacy: privacy ? "" : "You must accept the privacy policy",
   });
 
-  const validateStudent = () => ({
-    ...validateCommon(),
-    universityId: required(universityId, "University"),
-    studentId: required(studentId, "Student ID"),
-    programme: required(programme, "Programme"),
-    department: required(department, "Department"),
-    currentYear: required(currentYear, "Year"),
-    currentSemester: required(currentSemester, "Semester"),
-  });
+  const validateStudent = () => {
+    const next = {
+      ...validateCommon(),
+      institutionType: required(institutionType, "Institution type"),
+      universityId: studentFields.allowCustomInstitution && customInstitution ? "" : required(universityId, studentFields.institutionLabel),
+      studentId: required(studentId, studentFields.idLabel),
+      programme: required(programme, studentFields.programmeLabel),
+      department: required(department, studentFields.departmentLabel),
+      currentYear: required(currentYear, studentFields.yearLabel),
+      identityType: required(identityType, "Identity document"),
+      identityNumber: required(identityNumber, "ID number"),
+    };
+    if (studentFields.showSemester) next.currentSemester = required(currentSemester, "Semester");
+    if (studentFields.allowCustomInstitution && !universityId) next.customInstitution = required(customInstitution, "Institution name");
+    return next;
+  };
 
   const validateFaculty = () => ({
     ...validateCommon(),
-    universityId: required(universityId, "University"),
+    institutionType: required(institutionType, "Institution type"),
+    universityId: required(universityId, studentFields.institutionLabel || "Institution"),
     employeeId: required(employeeId, "Employee ID"),
     designation: required(designation, "Designation"),
     department: required(department, "Department"),
-    researchInterests: required(researchInterests, "Research interests"),
+    researchInterests: isTeachingFocused ? "" : required(researchInterests, "Research interests"),
+    identityType: required(identityType, "Identity document"),
+    identityNumber: required(identityNumber, "ID number"),
   });
 
   const validateResearcher = () => ({
@@ -171,12 +213,23 @@ export default function RegisterRolePage() {
 
   const validateUniAdmin = () => ({
     ...validateCommon(),
-    universityId: required(universityId, "University"),
+    institutionType: required(institutionType, "Institution type"),
+    universityId: required(universityId, "Institution"),
     office: required(office, "Office"),
     uniAdminDesignation: required(uniAdminDesignation, "Designation"),
     officialEmail: validateEmail(officialEmail),
     adminEmployeeId: required(adminEmployeeId, "Employee ID"),
     authDoc: authDoc ? "" : "Authorization document is required",
+    identityType: required(identityType, "Identity document"),
+    identityNumber: required(identityNumber, "ID number"),
+  });
+
+  const validateProfessional = () => ({
+    ...validateCommon(),
+    employer: required(employer, "Current organization"),
+    designation: required(designation, "Designation"),
+    identityType: required(identityType, "Identity document"),
+    identityNumber: required(identityNumber, "ID number"),
   });
 
   const submitRegistration = async (payload, needsApproval) => {
@@ -220,14 +273,29 @@ export default function RegisterRolePage() {
       programme,
       department,
       currentYear: Number(currentYear),
-      currentSemester: Number(currentSemester),
+      currentSemester: studentFields.showSemester ? Number(currentSemester) : undefined,
+      institutionType,
+      customInstitution: customInstitution || undefined,
+      identityVerification: {
+        documentType: identityType,
+        documentNumber: identityNumber,
+        status: "Pending",
+      },
     });
 
   const handleFacultySubmit = (e) =>
     handleStudentFacultySubmit(e, validateFaculty, {
       employeeId,
       designation,
+      educatorType: isTeachingFocused ? "teacher" : "faculty",
+      institutionType,
       researchAreas: researchInterests.split(",").map((s) => s.trim()).filter(Boolean),
+      teachingExpertise: isTeachingFocused ? researchInterests.split(",").map((s) => s.trim()).filter(Boolean) : undefined,
+      identityVerification: {
+        documentType: identityType,
+        documentNumber: identityNumber,
+        status: "Pending",
+      },
     });
 
   const handleResearcherSubmit = (e) =>
@@ -236,6 +304,19 @@ export default function RegisterRolePage() {
       affiliationType,
       researchAreas: researchInterests.split(",").map((s) => s.trim()).filter(Boolean),
       collaborationInterests: ["Joint research", "Technology transfer"],
+    });
+
+  const handleProfessionalSubmit = (e) =>
+    handleStudentFacultySubmit(e, validateProfessional, {
+      employer,
+      designation,
+      yearsExperience,
+      skills: professionalSkills.split(",").map((s) => s.trim()).filter(Boolean),
+      identityVerification: {
+        documentType: identityType,
+        documentNumber: identityNumber,
+        status: "Pending",
+      },
     });
 
   const handleOrgNext = () => {
@@ -280,7 +361,13 @@ export default function RegisterRolePage() {
         office,
         designation: uniAdminDesignation,
         employeeId: adminEmployeeId,
+        institutionType,
         documents: authDoc ? [authDoc] : [],
+        identityVerification: {
+          documentType: identityType,
+          documentNumber: identityNumber,
+          status: "Pending",
+        },
         verificationStatus: "Pending",
       },
       true
@@ -329,14 +416,30 @@ export default function RegisterRolePage() {
   const universityField = (
     <div>
       <Combobox
-        label={role === "researcher" ? "University / institute affiliation" : "University"}
+        label={role === "researcher" ? "University / institute affiliation" : studentFields.institutionLabel || "Institution"}
         options={uniOptions}
         value={universityId}
         onChange={setUniversityId}
-        placeholder={role === "researcher" ? "Search affiliations…" : "Search universities…"}
+        placeholder={role === "researcher" ? "Search affiliations…" : `Search ${String(studentFields.institutionLabel || "institutions").toLowerCase()}…`}
       />
       {errors.universityId ? <p className="mt-1.5 text-xs text-danger">{errors.universityId}</p> : null}
     </div>
+  );
+
+  const institutionTypeField = (
+    <Select
+      label="Institution type"
+      options={INSTITUTION_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+      value={institutionType}
+      onChange={(e) => {
+        setInstitutionType(e.target.value);
+        setUniversityId("");
+        setDepartment("");
+      }}
+      error={errors.institutionType}
+      placeholder="Select type"
+      required
+    />
   );
 
   return (
@@ -348,16 +451,45 @@ export default function RegisterRolePage() {
       {role === "student" ? (
         <form onSubmit={handleStudentSubmit} className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
           <Input label="Full name (English)" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="Ayesha Rahman" />
-          <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} required placeholder="you@std.buet.ac.bd" />
+          <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} required placeholder="you@student.example.bd" />
           <Input label="Mobile" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} required placeholder="+8801712345678" hint="Bangladesh mobile number" />
+          {institutionTypeField}
           {universityField}
-          <Input label="Student ID" value={studentId} onChange={(e) => setStudentId(e.target.value)} error={errors.studentId} required placeholder="BUET/CSE/2023/042" />
-          <Input label="Programme" value={programme} onChange={(e) => setProgramme(e.target.value)} error={errors.programme} required placeholder="BSc in Computer Science and Engineering" />
+          {studentFields.allowCustomInstitution ? (
+            <Input
+              label="Institution name (if not listed)"
+              value={customInstitution}
+              onChange={(e) => setCustomInstitution(e.target.value)}
+              error={errors.customInstitution}
+              placeholder="Official name of your institution"
+            />
+          ) : null}
+          <Input label={studentFields.idLabel} value={studentId} onChange={(e) => setStudentId(e.target.value)} error={errors.studentId} required placeholder="Institution ID or roll number" />
+          <Input label={studentFields.programmeLabel} value={programme} onChange={(e) => setProgramme(e.target.value)} error={errors.programme} required placeholder={studentFields.programmePlaceholder} />
           <div className="sm:col-span-2">
-            <Select label="Department" options={DISCIPLINES.map((d) => ({ value: d, label: d }))} value={department} onChange={(e) => setDepartment(e.target.value)} error={errors.department} placeholder="Select department" required />
+            <Select
+              label={studentFields.departmentLabel}
+              options={(studentFields.departmentOptions || DISCIPLINES).map((d) => ({ value: d, label: d }))}
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              error={errors.department}
+              placeholder={`Select ${studentFields.departmentLabel.toLowerCase()}`}
+              required
+            />
           </div>
-          <Select label="Year" options={YEAR_OPTIONS} value={currentYear} onChange={(e) => setCurrentYear(e.target.value)} error={errors.currentYear} placeholder="Year" required />
-          <Select label="Semester" options={SEMESTER_OPTIONS} value={currentSemester} onChange={(e) => setCurrentSemester(e.target.value)} error={errors.currentSemester} placeholder="Semester" required />
+          <Select label={studentFields.yearLabel} options={studentFields.yearOptions} value={currentYear} onChange={(e) => setCurrentYear(e.target.value)} error={errors.currentYear} placeholder={studentFields.yearLabel} required />
+          {studentFields.showSemester ? (
+            <Select label="Semester" options={studentFields.semesterOptions} value={currentSemester} onChange={(e) => setCurrentSemester(e.target.value)} error={errors.currentSemester} placeholder="Semester" required />
+          ) : (
+            <div />
+          )}
+          <IdentityVerificationFields
+            identityType={identityType}
+            onIdentityTypeChange={setIdentityType}
+            identityNumber={identityNumber}
+            onIdentityNumberChange={setIdentityNumber}
+            errors={errors}
+          />
           {passwordFields}
           <Button type="submit" className="w-full sm:col-span-2" loading={loading}>Create student account</Button>
         </form>
@@ -368,17 +500,43 @@ export default function RegisterRolePage() {
           <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="Dr. Rafiqul Islam" />
           <Input label="Institutional email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} required placeholder="rafiqul@cse.buet.ac.bd" />
           <Input label="Mobile" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} required />
+          {institutionTypeField}
           {universityField}
           <Input label="Employee ID" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} error={errors.employeeId} required placeholder="BUET/FAC/2010/088" />
-          <Select label="Designation" options={FACULTY_DESIGNATIONS.map((d) => ({ value: d, label: d }))} value={designation} onChange={(e) => setDesignation(e.target.value)} error={errors.designation} placeholder="Select designation" required />
+          <Select
+            label="Designation"
+            options={FACULTY_DESIGNATIONS.map((d) => ({ value: d, label: d }))}
+            value={designation}
+            onChange={(e) => setDesignation(e.target.value)}
+            error={errors.designation}
+            placeholder="Select designation"
+            required
+          />
           <div className="sm:col-span-2">
-            <Select label="Department" options={DISCIPLINES.map((d) => ({ value: d, label: d }))} value={department} onChange={(e) => setDepartment(e.target.value)} error={errors.department} placeholder="Department" required />
+            <Select label="Department / subject area" options={DISCIPLINES.map((d) => ({ value: d, label: d }))} value={department} onChange={(e) => setDepartment(e.target.value)} error={errors.department} placeholder="Department" required />
           </div>
           <div className="sm:col-span-2">
-            <Textarea label="Research interests" value={researchInterests} onChange={(e) => setResearchInterests(e.target.value)} error={errors.researchInterests} required placeholder="Machine Learning, NLP, Healthcare Informatics" hint="Comma-separated areas" />
+            <Textarea
+              label={isTeachingFocused ? "Subjects / teaching areas" : "Research interests"}
+              value={researchInterests}
+              onChange={(e) => setResearchInterests(e.target.value)}
+              error={errors.researchInterests}
+              required={!isTeachingFocused}
+              placeholder={isTeachingFocused ? "Physics, ICT, Higher secondary science" : "Machine Learning, NLP, Healthcare Informatics"}
+              hint="Comma-separated areas. School, madrasa, and vocational teachers can list subjects here."
+            />
           </div>
+          <IdentityVerificationFields
+            identityType={identityType}
+            onIdentityTypeChange={setIdentityType}
+            identityNumber={identityNumber}
+            onIdentityNumberChange={setIdentityNumber}
+            errors={errors}
+          />
           {passwordFields}
-          <Button type="submit" className="w-full sm:col-span-2" loading={loading}>Create faculty account</Button>
+          <Button type="submit" className="w-full sm:col-span-2" loading={loading}>
+            Create faculty account
+          </Button>
         </form>
       ) : null}
 
@@ -404,6 +562,29 @@ export default function RegisterRolePage() {
           </div>
           {passwordFields}
           <Button type="submit" className="w-full sm:col-span-2" loading={loading}>Create researcher account</Button>
+        </form>
+      ) : null}
+
+      {role === "industry-professional" ? (
+        <form onSubmit={handleProfessionalSubmit} className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
+          <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required placeholder="Arif Chowdhury" />
+          <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} required />
+          <Input label="Mobile" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} required />
+          <Input label="Current organization" value={employer} onChange={(e) => setEmployer(e.target.value)} error={errors.employer} required placeholder="Company, studio, or independent" />
+          <Input label="Designation" value={designation} onChange={(e) => setDesignation(e.target.value)} error={errors.designation} required placeholder="Senior Product Designer" />
+          <Input label="Years of experience" type="number" value={yearsExperience} onChange={(e) => setYearsExperience(e.target.value)} placeholder="5" />
+          <div className="sm:col-span-2">
+            <Textarea label="Skills" value={professionalSkills} onChange={(e) => setProfessionalSkills(e.target.value)} placeholder="Figma, product strategy, English" hint="Comma-separated skills used for matching local and international remote roles" />
+          </div>
+          <IdentityVerificationFields
+            identityType={identityType}
+            onIdentityTypeChange={setIdentityType}
+            identityNumber={identityNumber}
+            onIdentityNumberChange={setIdentityNumber}
+            errors={errors}
+          />
+          {passwordFields}
+          <Button type="submit" className="w-full sm:col-span-2" loading={loading}>Create professional account</Button>
         </form>
       ) : null}
 
@@ -473,18 +654,26 @@ export default function RegisterRolePage() {
       {role === "university-admin" ? (
         <form onSubmit={handleUniAdminSubmit} className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
           <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} required />
+          {institutionTypeField}
           {universityField}
-          <Input label="Office / unit" value={office} onChange={(e) => setOffice(e.target.value)} error={errors.office} required placeholder="Office of the Registrar / IQAC / Career Services" />
-          <Input label="Designation" value={uniAdminDesignation} onChange={(e) => setUniAdminDesignation(e.target.value)} error={errors.uniAdminDesignation} required placeholder="Deputy Registrar" />
-          <Input label="Official email" type="email" value={officialEmail} onChange={(e) => setOfficialEmail(e.target.value)} error={errors.officialEmail} required placeholder="karim.hossain@buet.ac.bd" hint="Must be @ac.bd institutional domain" />
+          <Input label="Office / unit" value={office} onChange={(e) => setOffice(e.target.value)} error={errors.office} required placeholder="Office of the Registrar / Principal / IQAC / Career Services" />
+          <Input label="Designation" value={uniAdminDesignation} onChange={(e) => setUniAdminDesignation(e.target.value)} error={errors.uniAdminDesignation} required placeholder="Deputy Registrar / Vice Principal" />
+          <Input label="Official email" type="email" value={officialEmail} onChange={(e) => setOfficialEmail(e.target.value)} error={errors.officialEmail} required placeholder="admin@institution.edu.bd" hint="Should be an official institutional domain" />
           <Input label="Mobile" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} required />
           <Input label="Employee ID" value={adminEmployeeId} onChange={(e) => setAdminEmployeeId(e.target.value)} error={errors.adminEmployeeId} required />
           <div className="sm:col-span-2">
-            <FileUploader label="Authorization letter from VC / Registrar" accept=".pdf" value={authDoc} onChange={setAuthDoc} onRemove={() => setAuthDoc(null)} />
+            <FileUploader label="Authorization letter from head of institution" accept=".pdf" value={authDoc} onChange={setAuthDoc} onRemove={() => setAuthDoc(null)} />
             {errors.authDoc ? <p className="mt-1.5 text-xs text-danger">{errors.authDoc}</p> : null}
           </div>
+          <IdentityVerificationFields
+            identityType={identityType}
+            onIdentityTypeChange={setIdentityType}
+            identityNumber={identityNumber}
+            onIdentityNumberChange={setIdentityNumber}
+            errors={errors}
+          />
           {passwordFields}
-          <p className="text-xs text-secondary sm:col-span-2">Submission enters <strong>approval pending</strong> until verified by UGC programme office.</p>
+          <p className="text-xs text-secondary sm:col-span-2">Submission enters <strong>approval pending</strong> until verified by the Nexus programme office or a recognized regulator such as UGC.</p>
           <Button type="submit" className="w-full sm:col-span-2" loading={loading}>Submit for approval</Button>
         </form>
       ) : null}
@@ -493,5 +682,13 @@ export default function RegisterRolePage() {
         Already registered? <Link href="/login" className="text-nexus-700 hover:underline dark:text-nexus-300">Sign in</Link>
       </p>
     </AuthCard>
+  );
+}
+
+export default function RegisterRolePage() {
+  return (
+    <Suspense fallback={<AuthCard title="Loading…" />}>
+      <RegisterRolePageContent />
+    </Suspense>
   );
 }

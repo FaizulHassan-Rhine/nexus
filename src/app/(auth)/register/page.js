@@ -10,7 +10,7 @@ export default function RegisterPage() {
   return (
     <AuthCardWide
       title="Create your Nexus account"
-      subtitle="Choose how you'll use the National Digital Matchmaking Hub. Registration is free for students, faculty, organizations, and university administrators."
+            subtitle="Choose how you'll use Bangladesh's national digital education, skills, and opportunity hub. Students from schools, colleges, madrasas, polytechnics, and universities can join, along with faculty (including teachers), researchers, institutions, companies, and training providers."
     >
       <div className="grid gap-4 sm:grid-cols-2">
         {REGISTERABLE_ROLES.map((role) => (

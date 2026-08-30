@@ -25,12 +25,13 @@ import {
 import { PageHeader, SectionHeader, Badge } from "@/components/ui";
 
 const AUDIENCES = [
-  { title: "Students", desc: "Skill profiles, discover, applications, and career passport.", href: "/register/student", icon: GraduationCap },
-  { title: "Faculty", desc: "Research profiles, exchange, consultancy, and technology transfer.", href: "/register/faculty", icon: Users },
+  { title: "Students", desc: "All recognized institutions: universities, colleges, schools, madrasas, polytechnics, and more.", href: "/register/student", icon: GraduationCap },
+  { title: "Faculty", desc: "University faculty and school, college, or madrasa teachers — research, exchange, workshops, and student support.", href: "/register/faculty", icon: Users },
   { title: "Researchers", desc: "Dedicated portal for grants, datasets, collaborations, and publications.", href: "/register/researcher", icon: Microscope },
-  { title: "Universities", desc: "Institutional profile, review queue, placements, and partnerships.", href: "/register/university-admin", icon: Landmark },
-  { title: "Industry & employers", desc: "Post opportunities, pipeline, and UGC co-funding.", href: "/register/organization", icon: Building2 },
-  { title: "Other organizations", desc: "NGOs, scholarship providers, and development partners.", href: "/organizations", icon: Handshake },
+  { title: "Educational institutions", desc: "Institutional profile, review queue, placements, and partnerships.", href: "/register/university-admin", icon: Landmark },
+  { title: "Companies & employers", desc: "Local jobs, internships, and international remote hiring.", href: "/register/organization", icon: Building2 },
+  { title: "Training providers", desc: "Language courses, bootcamps, workshops, and professional certificates.", href: "/register/organization?type=Training%20provider", icon: Handshake },
+  { title: "Industry professionals", desc: "Mentor talent and discover local or remote international roles.", href: "/register/industry-professional", icon: Briefcase },
   { title: "UGC administrators", desc: "National oversight, co-funding, and programme governance.", href: "/login", icon: ShieldCheck },
 ];
 

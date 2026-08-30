@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/cn";
+import { LuxurySpinner } from "@/components/brand/LuxuryLoader";
 
 const variants = {
   primary:
@@ -46,9 +47,7 @@ export function Button({
       )}
       {...props}
     >
-      {loading ? (
-        <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" />
-      ) : null}
+      {loading ? <LuxurySpinner size={size === "sm" ? 14 : 16} /> : null}
       {children}
     </button>
   );

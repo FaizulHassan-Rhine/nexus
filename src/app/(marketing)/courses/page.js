@@ -7,6 +7,7 @@ import { Badge, Select, Input, Pagination, EmptyState, FilterBar, PageHeader } f
 import { Breadcrumbs } from "@/components/layout/Shell";
 import { useAppStore } from "@/store/useAppStore";
 import { formatCurrency } from "@/lib/formatters";
+import { COURSE_CATEGORIES, LEARNING_PERIODS, isLanguageCourse } from "@/lib/ecosystem";
 
 const PAGE_SIZE = 12;
 
@@ -19,6 +20,8 @@ export default function CoursesPage() {
   const [mode, setMode] = useState("");
   const [cert, setCert] = useState("");
   const [track, setTrack] = useState("");
+  const [category, setCategory] = useState("");
+  const [period, setPeriod] = useState("");
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
 
@@ -39,8 +42,12 @@ export default function CoursesPage() {
     if (mode) items = items.filter((c) => c.deliveryMode === mode);
     if (cert === "yes") items = items.filter((c) => c.certification);
     if (track) items = items.filter((c) => c.careerTracks?.includes(track));
+    if (category) {
+      items = items.filter((c) => c.category === category || (category === "Language" && isLanguageCourse(c)));
+    }
+    if (period) items = items.filter((c) => c.learningPeriod === period);
     return items;
-  }, [courses, q, pricing, provider, level, mode, cert, track]);
+  }, [courses, q, pricing, provider, level, mode, cert, track, category, period]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -50,7 +57,7 @@ export default function CoursesPage() {
       <PageHeader
         breadcrumbs={<Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Courses" }]} />}
         title="Course discovery"
-        description="Free, paid, and subsidized courses with skill-gap relevance and linked opportunities."
+        description="Year-round, vacation, and semester-break programmes — including language courses, workshops, bootcamps, and professional certifications."
       />
 
       <FilterBar className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -85,6 +92,14 @@ export default function CoursesPage() {
           <option value="">All tracks</option>
           {tracks.map((t) => <option key={t} value={t}>{t}</option>)}
         </Select>
+        <Select label="Category" value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }}>
+          <option value="">All categories</option>
+          {COURSE_CATEGORIES.map((item) => <option key={item} value={item}>{item}</option>)}
+        </Select>
+        <Select label="Learning period" value={period} onChange={(e) => { setPeriod(e.target.value); setPage(1); }}>
+          <option value="">Any period</option>
+          {LEARNING_PERIODS.map((item) => <option key={item} value={item}>{item}</option>)}
+        </Select>
       </FilterBar>
 
       {paginated.length === 0 ? (
@@ -99,6 +114,8 @@ export default function CoursesPage() {
               <article key={course.id} className="card-interactive flex flex-col p-5">
                 <div className="flex flex-wrap gap-1.5">
                   <Badge tone="teal">{course.type}</Badge>
+                  {course.category ? <Badge tone="violet">{course.category}</Badge> : null}
+                  {course.learningPeriod && course.learningPeriod !== "Year-round" ? <Badge tone="blue">{course.learningPeriod}</Badge> : null}
                   {course.certification ? <Badge tone="green">Certificate</Badge> : null}
                   {!course.price?.amount ? <Badge tone="blue">Free</Badge> : course.price?.subsidizedAmount ? <Badge tone="violet">Subsidized</Badge> : null}
                 </div>

@@ -10,9 +10,9 @@ const FLOWS = {
   student: {
     title: "Student journey",
     steps: [
-      { title: "Register & verify", desc: "Create your profile with institutional email or TIGERfed mock SSO." },
-      { title: "Build your passport", desc: "Add skills, interests, availability, and documents." },
-      { title: "Get matched", desc: "Browse or receive explainable match scores for opportunities." },
+      { title: "Register & verify", desc: "Create your profile with institution type and an identity document (NID, birth certificate, or passport)." },
+      { title: "Build your passport", desc: "Add skills, languages, interests, availability, and documents." },
+      { title: "Get matched", desc: "Discover local jobs, international remote roles, courses, and scholarships with explainable scores." },
       { title: "Apply with oversight", desc: "Submit applications routed through your university for review." },
       { title: "Track progress", desc: "Monitor status from submission through offer and completion." },
     ],
@@ -22,11 +22,11 @@ const FLOWS = {
   faculty: {
     title: "Faculty journey",
     steps: [
-      { title: "Register with institutional email", desc: "Verify affiliation with your university." },
-      { title: "Add research profile", desc: "List expertise, publications, and collaboration interests." },
-      { title: "Discover opportunities", desc: "Joint research, exchanges, consultancy, and technology transfer." },
-      { title: "Apply or respond", desc: "Submit faculty applications or respond to industry problem statements." },
-      { title: "Manage projects", desc: "Track active collaborations and funding milestones." },
+      { title: "Register with your institution", desc: "University faculty and school, college, or madrasa teachers all register as Faculty. Verify affiliation and identity." },
+      { title: "Add teaching and research profile", desc: "List subjects, expertise, publications, and collaboration interests." },
+      { title: "Discover opportunities", desc: "Joint research, exchanges, workshops, consultancy, and student support tools." },
+      { title: "Apply or respond", desc: "Submit faculty applications, respond to industry problem statements, or recommend opportunities to students." },
+      { title: "Track impact", desc: "Manage collaborations and see which students apply and complete programmes." },
     ],
     cta: { label: "Register as faculty", href: "/register/faculty" },
     demo: "faculty@nexus.demo",
@@ -44,7 +44,7 @@ const FLOWS = {
     demo: "company@nexus.demo",
   },
   "university-admin": {
-    title: "University administrator journey",
+    title: "Institution administrator journey",
     steps: [
       { title: "Authorization request", desc: "Register with official email and authorization document." },
       { title: "Configure institution", desc: "Set departments, focal points, and partnership preferences." },
@@ -52,7 +52,7 @@ const FLOWS = {
       { title: "Monitor placements", desc: "Track active internships, disputes, and compliance." },
       { title: "Report & analytics", desc: "Export placement data and partnership metrics." },
     ],
-    cta: { label: "Register university admin", href: "/register/university-admin" },
+    cta: { label: "Register institution admin", href: "/register/university-admin" },
     demo: "university@nexus.demo",
   },
   ugc: {
@@ -82,7 +82,7 @@ export default function HowItWorksPage() {
           <Tab value="student">Student</Tab>
           <Tab value="faculty">Faculty</Tab>
           <Tab value="organization">Organization</Tab>
-          <Tab value="university-admin">University admin</Tab>
+          <Tab value="university-admin">Institution admin</Tab>
           <Tab value="ugc">UGC</Tab>
         </TabList>
 

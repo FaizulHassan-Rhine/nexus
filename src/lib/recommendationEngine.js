@@ -1,7 +1,7 @@
 import { scoreStudentOpportunity, scoreFacultyOpportunity, scoreResearcherOpportunity } from "./matchEngine.js";
 
 function scoreForRole(candidate, opportunity) {
-  if (candidate.role === "faculty") return scoreFacultyOpportunity(candidate, opportunity);
+  if (candidate.role === "faculty" || candidate.role === "teacher") return scoreFacultyOpportunity(candidate, opportunity);
   if (candidate.role === "researcher") return scoreResearcherOpportunity(candidate, opportunity);
   return scoreStudentOpportunity(candidate, opportunity);
 }

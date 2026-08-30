@@ -1,7 +1,7 @@
 export const APP_NAME = "Nexus";
 export const APP_TAGLINE = "National Digital Matchmaking Hub";
 export const STORE_KEY = "nexus-demo-v1";
-export const STORE_VERSION = 2;
+export const STORE_VERSION = 4;
 export const DEMO_PASSWORD = "demo123";
 export const DEMO_OTP = "123456";
 export const TIMEZONE = "Asia/Dhaka";
@@ -9,9 +9,11 @@ export const DEFAULT_CURRENCY = "BDT";
 
 export const ROLES = {
   STUDENT: "student",
+  TEACHER: "teacher",
   FACULTY: "faculty",
   RESEARCHER: "researcher",
   ORGANIZATION: "organization",
+  INDUSTRY_PROFESSIONAL: "industry-professional",
   UNIVERSITY_ADMIN: "university-admin",
   UGC: "ugc",
   HELPDESK: "helpdesk",
@@ -29,6 +31,12 @@ export const DEMO_ACCOUNTS = [
     role: ROLES.FACULTY,
     name: "Dr. Rafiqul Islam",
     scenario: "Faculty seeking research, exchange, and technology-transfer opportunities",
+  },
+  {
+    email: "professional@nexus.demo",
+    role: ROLES.INDUSTRY_PROFESSIONAL,
+    name: "Arif Chowdhury",
+    scenario: "Industry professional exploring international remote roles and student mentorship",
   },
   {
     email: "researcher@nexus.demo",
@@ -65,6 +73,7 @@ export const DEMO_ACCOUNTS = [
 export const OPPORTUNITY_TYPES = [
   "Part-time job",
   "Full-time job",
+  "International remote job",
   "Paid internship",
   "Unpaid internship",
   "Virtual internship",
@@ -77,6 +86,10 @@ export const OPPORTUNITY_TYPES = [
   "Free course",
   "Paid course",
   "Subsidized course",
+  "Language course",
+  "Workshop",
+  "Certification programme",
+  "Professional training",
   "Bootcamp",
   "Mentorship",
   "Scholarship",
@@ -138,6 +151,14 @@ export const DISCIPLINES = [
   "Law",
   "Design",
   "Data Science",
+  "Science",
+  "Humanities",
+  "Islamic Studies",
+  "Nursing",
+  "Electrical",
+  "Mechanical Engineering",
+  "Computer",
+  "Vocational",
 ];
 
 export const ORGANIZATION_TYPES = [
@@ -152,6 +173,9 @@ export const ORGANIZATION_TYPES = [
   "Embassy/cultural partner",
   "Donor",
   "Government agency",
+  "Industry association",
+  "Hospital / medical employer",
+  "Language school",
 ];
 
 export const WORK_MODES = ["Onsite", "Hybrid", "Remote"];
@@ -166,17 +190,21 @@ export const MATCH_BANDS = [
 
 export const ROLE_DASHBOARDS = {
   [ROLES.STUDENT]: "/student/dashboard",
+  [ROLES.TEACHER]: "/faculty/dashboard",
   [ROLES.FACULTY]: "/faculty/dashboard",
   [ROLES.RESEARCHER]: "/researcher/dashboard",
   [ROLES.ORGANIZATION]: "/organization/dashboard",
+  [ROLES.INDUSTRY_PROFESSIONAL]: "/student/dashboard",
   [ROLES.UNIVERSITY_ADMIN]: "/university-admin/dashboard",
   [ROLES.UGC]: "/ugc/dashboard",
   [ROLES.HELPDESK]: "/helpdesk/dashboard",
 };
 
 export const JOURNEY_STAGES = [
-  { id: "first-year", label: "First year" },
-  { id: "middle-years", label: "Second/third year" },
+  { id: "school", label: "School / SSC" },
+  { id: "college", label: "College / HSC" },
+  { id: "first-year", label: "Undergraduate — first year" },
+  { id: "middle-years", label: "Undergraduate — middle years" },
   { id: "final-year", label: "Final year" },
-  { id: "alumni", label: "Graduate/alumni" },
+  { id: "alumni", label: "Graduate / alumni" },
 ];

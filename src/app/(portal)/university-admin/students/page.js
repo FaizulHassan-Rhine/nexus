@@ -33,7 +33,7 @@ export default function StudentsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Students" description={`${students.length} registered students · ${uniId}`} />
+      <PageHeader title="Students" description={`${students.length} registered learners at this institution`} />
 
       <FilterBar>
         <Input label="Search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Name or student ID" />

@@ -23,12 +23,14 @@ import {
 import { cn } from "@/lib/cn";
 import { t } from "@/lib/i18n";
 import { ROLE_DASHBOARDS } from "@/lib/constants";
+import { portalRoleFor } from "@/lib/ecosystem";
 import { NAV_BY_ROLE } from "@/lib/navigation";
 import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser, useHydrated, useLanguage, useThemePreference } from "@/hooks/useApp";
 import { Avatar, Badge, IconButton, DropdownMenu, Input } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { NexusLogo, NexusMark } from "@/components/brand/NexusLogo";
+import { LuxuryLoader } from "@/components/brand/LuxuryLoader";
 
 export { NexusLogo, NexusMark };
 
@@ -395,16 +397,18 @@ function RoleSidebar({ role, collapsed, onNavigate }) {
 
 const ROLE_LABELS = {
   student: "Student",
+  teacher: "Faculty",
   faculty: "Faculty",
   researcher: "Researcher",
   organization: "Organization",
-  "university-admin": "University admin",
+  "industry-professional": "Industry professional",
+  "university-admin": "Institution admin",
   ugc: "UGC officer",
   helpdesk: "Helpdesk",
 };
 
 function profilePath(role) {
-  if (role === "faculty") return "/faculty/profile";
+  if (role === "faculty" || role === "teacher") return "/faculty/profile";
   if (role === "researcher") return "/researcher/profile";
   if (role === "organization") return "/organization/profile";
   if (role === "university-admin") return "/university-admin/institution-profile";
@@ -452,7 +456,7 @@ export function PortalShell({ role, children, title }) {
       router.replace("/login");
       return;
     }
-    if (user.role !== role) {
+    if (portalRoleFor(user.role) !== role) {
       router.replace(ROLE_DASHBOARDS[user.role] || "/login");
     }
   }, [hydrated, user, role, router]);
@@ -462,12 +466,8 @@ export function PortalShell({ role, children, title }) {
   const organization = user ? organizations.find((o) => o.id === user.organizationId) : null;
   const userMeta = user ? profileMeta(user, university, organization) : "";
 
-  if (!hydrated || !user || user.role !== role) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-nexus-600 border-r-transparent" />
-      </div>
-    );
+  if (!hydrated || !user || portalRoleFor(user.role) !== role) {
+    return <LuxuryLoader variant="page" label="Opening your portal" />;
   }
 
   return (
@@ -519,7 +519,7 @@ export function PortalShell({ role, children, title }) {
               <div>
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-semibold">{title || "Portal"}</p>
-                  <Badge tone="teal">{user.role}</Badge>
+          <Badge tone="teal">{ROLE_LABELS[user.role] || user.role}</Badge>
                 </div>
               </div>
             </div>

@@ -18,7 +18,7 @@ const STATUSES = {
     bg: "bg-amber-50 dark:bg-amber-950/40",
     title: "Verification in progress",
     description:
-      "Your registration is under review. University administrators or Nexus verification teams typically respond within 3–5 working days.",
+      "Your registration is under review. Institution administrators or Nexus verification teams typically respond within 3–5 working days. Identity documents (NID, birth certificate, or passport) are checked according to age and account type.",
   },
   approved: {
     label: "Approved",

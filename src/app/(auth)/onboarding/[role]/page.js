@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Sparkles } from "lucide-react";
@@ -26,6 +26,7 @@ import {
   INTEREST_OPTIONS,
 } from "@/components/auth/authOptions";
 import { WORK_MODES } from "@/lib/constants";
+import { SPOKEN_LANGUAGES } from "@/lib/ecosystem";
 import { ROLE_DASHBOARDS } from "@/lib/constants";
 
 const ONBOARDING_CONFIG = {
@@ -34,7 +35,17 @@ const ONBOARDING_CONFIG = {
     steps: ["Academic", "Skills", "Interests", "Work prefs", "Financial", "Documents", "Privacy", "Preview"],
     optionalSteps: [5, 6],
   },
+  "industry-professional": {
+    title: "Professional onboarding",
+    steps: ["Academic", "Skills", "Interests", "Work prefs", "Financial", "Documents", "Privacy", "Preview"],
+    optionalSteps: [5, 6],
+  },
   faculty: {
+    title: "Faculty onboarding",
+    steps: ["Academic", "Research", "Publications", "Exchange", "Availability", "Documents"],
+    optionalSteps: [2, 5],
+  },
+  teacher: {
     title: "Faculty onboarding",
     steps: ["Academic", "Research", "Publications", "Exchange", "Availability", "Documents"],
     optionalSteps: [2, 5],
@@ -100,6 +111,7 @@ export default function OnboardingRolePage() {
   const [interests, setInterests] = useState([]);
   const [careerGoals, setCareerGoals] = useState("");
   const [workModes, setWorkModes] = useState([]);
+  const [languagesSpoken, setLanguagesSpoken] = useState(["Bangla", "English"]);
   const [locationPref, setLocationPref] = useState("Dhaka");
   const [weeklyHours, setWeeklyHours] = useState(20);
   const [needsFinancial, setNeedsFinancial] = useState(false);
@@ -145,6 +157,10 @@ export default function OnboardingRolePage() {
     () => universities.find((u) => u.id === user?.universityId),
     [universities, user?.universityId]
   );
+
+  useEffect(() => {
+    if (role === "teacher") router.replace("/onboarding/faculty");
+  }, [role, router]);
 
   if (!config) {
     return (
@@ -239,6 +255,12 @@ export default function OnboardingRolePage() {
               <Checkbox key={m} label={m} checked={workModes.includes(m)} onChange={() => toggle(workModes, setWorkModes, m)} />
             ))}
             <Select label="Preferred location" options={DIVISIONS.map((d) => ({ value: d, label: d }))} value={locationPref} onChange={(e) => setLocationPref(e.target.value)} />
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Languages</p>
+              {SPOKEN_LANGUAGES.map((lang) => (
+                <Checkbox key={lang} label={lang} checked={languagesSpoken.includes(lang)} onChange={() => toggle(languagesSpoken, setLanguagesSpoken, lang)} />
+              ))}
+            </div>
             <Slider label="Weekly availability (hours)" value={weeklyHours} onChange={setWeeklyHours} min={5} max={40} />
           </div>
         );
@@ -471,8 +493,8 @@ export default function OnboardingRolePage() {
   };
 
   const renderStep = () => {
-    if (role === "student") return renderStudentStep();
-    if (role === "faculty") return renderFacultyStep();
+    if (role === "student" || role === "industry-professional") return renderStudentStep();
+    if (role === "faculty" || role === "teacher") return renderFacultyStep();
     if (role === "researcher") return renderResearcherStep();
     if (role === "organization") return renderOrgStep();
     if (role === "university-admin") return renderUniAdminStep();
@@ -487,7 +509,7 @@ export default function OnboardingRolePage() {
 
     const baseUpdates = { verificationStatus: "Verified" };
 
-    if (role === "student") {
+    if (role === "student" || role === "industry-professional") {
       await finish({
         ...baseUpdates,
         cgpaRange,
@@ -495,6 +517,7 @@ export default function OnboardingRolePage() {
         interests,
         careerGoals: careerGoals.split(",").map((s) => s.trim()).filter(Boolean),
         workModePreferences: workModes,
+        languages: languagesSpoken,
         locationPreferences: [locationPref],
         weeklyAvailability: weeklyHours,
         financialSupportNeed: needsFinancial,
@@ -502,7 +525,7 @@ export default function OnboardingRolePage() {
         documents: cv ? [cv] : [],
         privacyPreferences: { showCgpa: shareCgpa, showContact: shareContact },
       });
-    } else if (role === "faculty") {
+    } else if (role === "faculty" || role === "teacher") {
       await finish({
         ...baseUpdates,
         researchAreas: researchAreas.split(",").map((s) => s.trim()).filter(Boolean),

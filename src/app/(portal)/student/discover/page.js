@@ -93,7 +93,16 @@ export default function DiscoverPage() {
         (o.division === user.preferredLocation || o.location === user.preferredLocation || user.locationPreferences?.includes(o.division))
     ).slice(0, 6);
 
-    const remote = published.filter((o) => o.workMode === "Remote").slice(0, 6);
+    const remote = published.filter((o) => o.workMode === "Remote" && o.type !== "International remote job" && o.geographicScope !== "international-remote").slice(0, 6);
+    const internationalRemote = published.filter(
+      (o) => o.type === "International remote job" || o.geographicScope === "international-remote"
+    ).slice(0, 6);
+    const languageLearning = published.filter((o) => String(o.type || "").toLowerCase().includes("language") || o.tags?.some((t) => String(t).toLowerCase().includes("language"))).slice(0, 6);
+    const localJobs = published.filter(
+      (o) =>
+        ["Part-time job", "Full-time job", "Paid internship", "Campus job"].includes(o.type) &&
+        o.geographicScope !== "international-remote"
+    ).slice(0, 6);
 
     const skillsUnlock = published.filter((o) => {
       const match = matchMap.get(o.id);
@@ -114,6 +123,9 @@ export default function DiscoverPage() {
       financial,
       nearYou,
       remote,
+      internationalRemote,
+      languageLearning,
+      localJobs,
       skillsUnlock,
       deadlines,
     };
@@ -145,7 +157,7 @@ export default function DiscoverPage() {
     <div className="space-y-10">
       <PageHeader
         title="Discover"
-        description="Personalized opportunity sections based on your profile, matches, and journey stage"
+        description="Local jobs in Bangladesh, international remote roles, language programmes, and short courses matched to your skills, education, and interests"
         actions={<OpportunityViewToggle view={view} onViewChange={setView} />}
       />
 
@@ -196,8 +208,35 @@ export default function DiscoverPage() {
         onNotInterested={handleNotInterested}
       />
       <DiscoverSection
+        title="Local jobs & internships"
+        description="Opportunities based in Bangladesh, matched to your education and skills"
+        opportunities={sections.localJobs || []}
+        matches={userMatches}
+        view={view}
+        onMoreLikeThis={handleMoreLikeThis}
+        onNotInterested={handleNotInterested}
+      />
+      <DiscoverSection
+        title="International remote jobs"
+        description="Remote roles abroad matched on skills, language proficiency, and career interests"
+        opportunities={sections.internationalRemote || []}
+        matches={userMatches}
+        view={view}
+        onMoreLikeThis={handleMoreLikeThis}
+        onNotInterested={handleNotInterested}
+      />
+      <DiscoverSection
+        title="Language programmes"
+        description="Language courses and related opportunities for academic, professional, or international pathways"
+        opportunities={sections.languageLearning || []}
+        matches={userMatches}
+        view={view}
+        onMoreLikeThis={handleMoreLikeThis}
+        onNotInterested={handleNotInterested}
+      />
+      <DiscoverSection
         title="Remote & flexible"
-        description="Work from anywhere opportunities"
+        description="Work-from-anywhere listings within the Nexus network"
         opportunities={sections.remote || []}
         matches={userMatches}
         view={view}

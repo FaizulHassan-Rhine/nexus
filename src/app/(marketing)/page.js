@@ -30,32 +30,34 @@ const WORKFLOW_STEPS = [
 ];
 
 const ROLE_CARDS = [
-  { role: "student", title: "Student", desc: "Discover internships, scholarships, courses, and project funding matched to your profile.", icon: GraduationCap, href: "/register/student" },
-  { role: "faculty", title: "Faculty", desc: "Find research collaborations, exchanges, and consultancy opportunities.", icon: Users, href: "/register/faculty" },
+  { role: "student", title: "Student", desc: "Join from a university, college, school, madrasa, polytechnic, or other recognized institution.", icon: GraduationCap, href: "/register/student" },
+  { role: "faculty", title: "Faculty & teachers", desc: "Find research collaborations, exchanges, workshops, and student support tools.", icon: Users, href: "/register/faculty" },
   { role: "researcher", title: "Researcher", desc: "Access grants, datasets, joint research calls, and technology transfer pathways.", icon: Microscope, href: "/register/researcher" },
-  { role: "organization", title: "Organization", desc: "Post opportunities, access UGC co-funding, and hire verified talent.", icon: Building2, href: "/register/organization" },
-  { role: "university-admin", title: "University", desc: "Review matches, verify profiles, and monitor student placements.", icon: Landmark, href: "/register/university-admin" },
+  { role: "organization", title: "Industry & training", desc: "Post jobs, internships, language courses, and professional training.", icon: Building2, href: "/register/organization" },
+  { role: "university-admin", title: "Educational institution", desc: "Review matches, verify profiles, and monitor placements across your campus.", icon: Landmark, href: "/register/university-admin" },
 ];
 
 const CATEGORY_GROUPS = [
-  { label: "Jobs & internships", types: ["Paid internship", "Full-time job", "Part-time job", "Micro-internship"] },
-  { label: "Learning", types: ["Free course", "Paid course", "Bootcamp", "Mentorship"] },
+  { label: "Jobs & internships", types: ["Paid internship", "Full-time job", "International remote job", "Part-time job"] },
+  { label: "Learning", types: ["Language course", "Workshop", "Bootcamp", "Certification programme"] },
   { label: "Funding", types: ["Scholarship", "Student project funding", "Research grant"] },
   { label: "Research & innovation", types: ["Joint research", "Competition/hackathon", "Technology licensing"] },
 ];
 
 const JOURNEY_CONTENT = {
-  "first-year": { title: "First year", items: ["Financial support programmes", "Part-time campus jobs", "Foundational skill courses"] },
-  "middle-years": { title: "Second & third year", items: ["Training bootcamps", "Industry projects", "Mentorship circles", "Regional exposure"] },
-  "final-year": { title: "Final year", items: ["Paid internships", "Graduate jobs", "Scholarships", "Higher-study pathways"] },
+  school: { title: "School / SSC", items: ["Holiday digital-skills workshops", "Language starter courses", "STEM camps", "Career awareness"] },
+  college: { title: "College / HSC", items: ["Semester-break bootcamps", "IELTS and language tracks", "Need-based scholarships", "Foundation internships"] },
+  "first-year": { title: "Undergraduate — first year", items: ["Financial support programmes", "Part-time campus jobs", "Foundational skill courses"] },
+  "middle-years": { title: "Undergraduate — middle years", items: ["Training bootcamps", "Industry projects", "Mentorship circles", "Regional exposure"] },
+  "final-year": { title: "Final year", items: ["Paid internships", "Graduate jobs", "International remote roles", "Higher-study pathways"] },
   alumni: { title: "Graduate & alumni", items: ["Reskilling courses", "Mentoring opportunities", "Hiring programmes", "Startup support"] },
 };
 
 const BENEFITS = [
-  { title: "Students", points: ["Explainable match scores", "UGC co-funded stipends", "University-approved applications", "Career passport"] },
-  { title: "Faculty", points: ["Research matchmaking", "Industry problem statements", "Technology transfer listings", "Exchange programmes"] },
-  { title: "Organizations", points: ["Verified talent pipeline", "50/50 UGC co-funding", "Compliance monitoring", "Multi-campus reach"] },
-  { title: "Universities", points: ["Centralized review queue", "Placement analytics", "Partnership management", "Audit trail"] },
+  { title: "Students", points: ["All recognized institution types", "Year-round and break courses", "Local and international remote jobs", "Identity-verified profiles"] },
+  { title: "Teachers & faculty", points: ["Research matchmaking", "Classroom-to-opportunity tools", "Industry problem statements", "Exchange programmes"] },
+  { title: "Industry & trainers", points: ["Verified talent pipeline", "Language and skills programmes", "50/50 UGC co-funding", "Multi-campus reach"] },
+  { title: "Institutions & UGC", points: ["National hub for education and skills", "Review and verification workflows", "Partnership management", "Audit trail"] },
 ];
 
 const TESTIMONIALS = [
@@ -64,7 +66,7 @@ const TESTIMONIALS = [
   { name: "Prototype story — Nusrat J.", role: "HR, BengalTech", quote: "UGC co-funding made it feasible to expand our intern programme across three divisions." },
 ];
 
-const PARTNER_TYPES = ["Public universities", "Private universities", "Technology companies", "NGOs & development", "Scholarship providers", "Government agencies"];
+const PARTNER_TYPES = ["Public universities", "Colleges & schools", "Madrasas & polytechnics", "Technology companies", "Training providers", "NGOs & development", "Scholarship providers", "Government agencies"];
 
 const bandChrome = "border-y border-[#d5e3df] bg-chrome dark:border-nexus-800 dark:bg-nexus-900/40";
 const bandWhite = "bg-white dark:bg-nexus-950";
@@ -73,6 +75,7 @@ export default function LandingPage() {
   const router = useRouter();
   const opportunities = useAppStore((s) => s.opportunities);
   const users = useAppStore((s) => s.users);
+  const universities = useAppStore((s) => s.universities);
   const journeyStage = useAppStore((s) => s.journeyStage);
   const setJourneyStage = useAppStore((s) => s.setJourneyStage);
 
@@ -134,7 +137,7 @@ export default function LandingPage() {
               Connect Bangladesh&apos;s talent with verified opportunities
             </p>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-nexus-100/90 sm:text-xl">
-              Explainable matching for students, faculty, universities, and organizations — with university oversight.
+              A national hub for students, teachers, faculty, researchers, institutions, companies, and regulators — with explainable matching and identity verification.
             </p>
           </div>
 
@@ -255,7 +258,7 @@ export default function LandingPage() {
       {/* Journey lifecycle */}
       <section className={`${bandWhite} py-16`}>
         <div className="page-container">
-          <SectionHeader title="Your journey with Nexus" description="Support at every stage — from first year through alumni careers." />
+          <SectionHeader title="Your journey with Nexus" description="Support at every stage — from school and college through university and alumni careers." />
           <div className="mb-6 flex flex-wrap gap-2">
             {JOURNEY_STAGES.map((stage) => (
               <button
@@ -294,7 +297,7 @@ export default function LandingPage() {
         <div className="page-container py-16">
           <SectionHeader
             title="Featured opportunities"
-            description="Highlighted roles from verified organizations across Bangladesh."
+            description="Highlighted roles from verified organizations across Bangladesh and international remote teams."
             actions={
               <Link href="/opportunities">
                 <Button variant="secondary" size="sm">View all</Button>
@@ -391,7 +394,7 @@ export default function LandingPage() {
           <SectionHeader title="National impact" description="Demo metrics from the prototype seed dataset — not official government statistics." />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard label="Published opportunities" value={String(opportunities.length)} hint="Across all types" tone="teal" />
-            <StatCard label="Partner universities" value="12" hint="Active on Nexus" tone="blue" />
+            <StatCard label="Partner institutions" value={String(universities.length)} hint="Universities, colleges, schools, madrasas, polytechnics" tone="blue" />
             <StatCard label="Verified organizations" value="18" hint="Including UGC co-funding partners" tone="violet" />
             <StatCard label="Match reviews" value="847" hint="University approvals this quarter (demo)" tone="green" />
           </div>

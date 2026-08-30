@@ -9,7 +9,7 @@ export default function AboutPage() {
       <header className="mx-auto max-w-3xl text-center">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">About Nexus</h1>
         <p className="mt-3 text-secondary">
-          A frontend prototype of Bangladesh&apos;s national opportunity-matching ecosystem — connecting students, faculty, universities, organizations, and UGC.
+          A frontend prototype of Bangladesh&apos;s national digital education, research, skills, and opportunity hub — connecting students, teachers, faculty, researchers, educational institutions, companies, training providers, and regulators such as UGC.
         </p>
       </header>
 
@@ -17,31 +17,32 @@ export default function AboutPage() {
         <section>
           <h2 className="text-xl font-semibold">Mission</h2>
           <p className="mt-3 text-secondary">
-            Nexus aims to reduce friction between talent and opportunity by providing a unified, verified marketplace with intelligent matching, university oversight, and transparent funding mechanisms — starting with internships, scholarships, courses, research, and technology transfer.
+            Nexus aims to reduce friction between talent and opportunity by providing a unified, verified marketplace with intelligent matching, institutional oversight, and transparent funding — covering education, short courses, language learning, internships, local jobs, international remote work, research, and industry–academia partnerships.
           </p>
         </section>
 
         <section>
           <h2 className="text-xl font-semibold">The problem</h2>
           <p className="mt-3 text-secondary">
-            Students often discover internships and scholarships through informal networks. Organizations struggle to reach verified candidates across divisions. Universities lack centralized visibility into placements and co-funded programmes. UGC co-funding rules exist but are hard to operationalize at scale.
+            Students across universities, colleges, schools, madrasas, polytechnics, and training institutes often discover internships and scholarships through informal networks. Organizations struggle to reach verified candidates. Institutions lack centralized visibility into placements. UGC co-funding rules exist but are hard to operationalize at scale.
           </p>
         </section>
 
         <section>
           <h2 className="text-xl font-semibold">Vision</h2>
           <p className="mt-3 text-secondary">
-            A nationally coordinated digital hub where every eligible student can discover explainable matches, every verified organization can post opportunities with compliance built in, and every partner university maintains human-in-the-loop approval before candidates reach employers.
+            A nationally coordinated digital hub where learners, educators, researchers, companies, and regulators can exchange opportunities related to education, skills, internships, employment, remote international jobs, research collaboration, scholarships, and industry–academia partnerships.
           </p>
         </section>
 
         <section>
           <h2 className="text-xl font-semibold">Governance model</h2>
           <ul className="mt-3 list-disc space-y-2 pl-5 text-secondary">
-            <li><strong className="text-slate-800 dark:text-slate-200">Students & faculty</strong> — maintain Opportunity Passports with skills, preferences, and documents.</li>
-            <li><strong className="text-slate-800 dark:text-slate-200">Organizations</strong> — verified before publishing; subject to complaint aggregation and risk scoring.</li>
-            <li><strong className="text-slate-800 dark:text-slate-200">Universities</strong> — review matches and applications; focal points for each institution.</li>
-            <li><strong className="text-slate-800 dark:text-slate-200">UGC</strong> — oversees co-funding programmes, disputes, audits, and national analytics.</li>
+            <li><strong className="text-slate-800 dark:text-slate-200">Students & teachers</strong> — maintain Opportunity Passports with skills, institution type, language proficiency, and identity documents (NID, birth certificate, or passport).</li>
+            <li><strong className="text-slate-800 dark:text-slate-200">Faculty & researchers</strong> — collaborate on grants, exchanges, datasets, and technology transfer.</li>
+            <li><strong className="text-slate-800 dark:text-slate-200">Organizations & training providers</strong> — verified before publishing jobs, courses, and professional programmes.</li>
+            <li><strong className="text-slate-800 dark:text-slate-200">Educational institutions</strong> — universities, colleges, schools, madrasas, polytechnics, and training institutes review matches and applications.</li>
+            <li><strong className="text-slate-800 dark:text-slate-200">UGC and regulators</strong> — oversee co-funding programmes, disputes, audits, and national analytics.</li>
             <li><strong className="text-slate-800 dark:text-slate-200">Helpdesk</strong> — 95% SLA target within 24 hours with escalation paths.</li>
           </ul>
         </section>

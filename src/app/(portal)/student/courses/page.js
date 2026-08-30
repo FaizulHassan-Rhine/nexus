@@ -2,15 +2,16 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { PageHeader, SectionHeader } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 import { Tabs, TabList, Tab, TabPanel } from "@/components/ui";
-import { Button, Badge, Progress, EmptyState } from "@/components/ui";
+import { Button, Badge, Progress, EmptyState, Select } from "@/components/ui";
 import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser, useHydrated } from "@/hooks/useApp";
 import { courseService } from "@/lib/mockServices";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { toast } from "sonner";
 import { getStudentMatches } from "../_lib/helpers";
+import { COURSE_CATEGORIES, LEARNING_PERIODS, isLanguageCourse, isBreakOrShortCourse } from "@/lib/ecosystem";
 
 function CourseCard({ course, enrollment, onEnroll, onComplete, loading }) {
   const isEnrolled = Boolean(enrollment);
@@ -21,6 +22,8 @@ function CourseCard({ course, enrollment, onEnroll, onComplete, loading }) {
       <div className="flex flex-wrap gap-2">
         <Badge tone="teal">{course.type}</Badge>
         <Badge tone="slate">{course.deliveryMode}</Badge>
+        {course.category ? <Badge tone="violet">{course.category}</Badge> : null}
+        {course.learningPeriod && course.learningPeriod !== "Year-round" ? <Badge tone="blue">{course.learningPeriod}</Badge> : null}
       </div>
       <h3 className="mt-2 text-lg font-semibold">
         <Link href={`/courses/${course.slug}`} className="hover:text-nexus-700">
@@ -63,6 +66,8 @@ export default function CoursesPage() {
   const courses = useAppStore((s) => s.courses);
   const matches = useAppStore((s) => s.matches);
   const [loadingId, setLoadingId] = useState(null);
+  const [category, setCategory] = useState("");
+  const [period, setPeriod] = useState("");
 
   const userMatches = useMemo(
     () => (user ? getStudentMatches(matches, user.id) : []),
@@ -84,6 +89,14 @@ export default function CoursesPage() {
   const enrollments = user?.courseEnrollments || [];
   const enrolled = courses.filter((c) => enrollments.some((e) => e.courseId === c.id && e.status !== "Completed"));
   const completed = courses.filter((c) => enrollments.some((e) => e.courseId === c.id && e.status === "Completed"));
+  const catalog = useMemo(() => {
+    let items = [...courses];
+    if (category) items = items.filter((c) => c.category === category || (category === "Language" && isLanguageCourse(c)));
+    if (period) items = items.filter((c) => c.learningPeriod === period);
+    return items;
+  }, [courses, category, period]);
+  const languageCourses = catalog.filter((c) => isLanguageCourse(c));
+  const breakCourses = catalog.filter((c) => isBreakOrShortCourse(c) || (c.learningPeriod && c.learningPeriod !== "Year-round"));
 
   const getEnrollment = (courseId) => enrollments.find((e) => e.courseId === courseId);
 
@@ -133,15 +146,39 @@ export default function CoursesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Courses" description="Recommended, enrolled, and completed learning paths" />
+      <PageHeader
+        title="Courses"
+        description="Year-round learning plus short programmes for summer, winter, and semester breaks — including language courses, bootcamps, workshops, and certifications"
+      />
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Select label="Category" value={category} onChange={(e) => setCategory(e.target.value)}>
+          <option value="">All categories</option>
+          {COURSE_CATEGORIES.map((item) => (
+            <option key={item} value={item}>{item}</option>
+          ))}
+        </Select>
+        <Select label="When you can study" value={period} onChange={(e) => setPeriod(e.target.value)}>
+          <option value="">Any period</option>
+          {LEARNING_PERIODS.map((item) => (
+            <option key={item} value={item}>{item}</option>
+          ))}
+        </Select>
+      </div>
 
       <Tabs defaultValue="recommended">
         <TabList>
           <Tab value="recommended">Recommended ({recommended.length})</Tab>
+          <Tab value="language">Language ({languageCourses.length})</Tab>
+          <Tab value="breaks">Breaks & short programmes ({breakCourses.length})</Tab>
+          <Tab value="all">All ({catalog.length})</Tab>
           <Tab value="enrolled">Enrolled ({enrolled.length})</Tab>
           <Tab value="completed">Completed ({completed.length})</Tab>
         </TabList>
-        <TabPanel value="recommended">{renderList(recommended.length ? recommended : courses.slice(0, 6))}</TabPanel>
+        <TabPanel value="recommended">{renderList(recommended.length ? recommended : catalog.slice(0, 6))}</TabPanel>
+        <TabPanel value="language">{renderList(languageCourses)}</TabPanel>
+        <TabPanel value="breaks">{renderList(breakCourses)}</TabPanel>
+        <TabPanel value="all">{renderList(catalog)}</TabPanel>
         <TabPanel value="enrolled">{renderList(enrolled)}</TabPanel>
         <TabPanel value="completed">{renderList(completed)}</TabPanel>
       </Tabs>

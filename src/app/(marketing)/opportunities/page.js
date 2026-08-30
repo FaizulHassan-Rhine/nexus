@@ -21,6 +21,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { useCurrentUser } from "@/hooks/useApp";
 import { filterOpportunities, parseSearchParams, buildSearchQuery } from "@/lib/opportunityFilters";
 import { OPPORTUNITY_TYPES, DIVISIONS, DISCIPLINES, WORK_MODES } from "@/lib/constants";
+import { GEOGRAPHIC_SCOPES, INSTITUTION_TYPES, SPOKEN_LANGUAGES } from "@/lib/ecosystem";
 import { toast } from "sonner";
 
 const PAGE_SIZE = 12;
@@ -87,6 +88,26 @@ function OpportunitiesContent() {
         <option value="middle-years">Second/third year</option>
         <option value="final-year">Final year</option>
         <option value="alumni">Alumni</option>
+        <option value="school">School / SSC</option>
+        <option value="college">College / HSC</option>
+      </Select>
+      <Select label="Location scope" value={filters.geographicScope} onChange={(e) => updateFilters({ geographicScope: e.target.value })}>
+        <option value="">Local & international</option>
+        {GEOGRAPHIC_SCOPES.map((item) => (
+          <option key={item.value} value={item.value}>{item.label}</option>
+        ))}
+      </Select>
+      <Select label="Institution type" value={filters.institutionType} onChange={(e) => updateFilters({ institutionType: e.target.value })}>
+        <option value="">Any institution</option>
+        {INSTITUTION_TYPES.map((item) => (
+          <option key={item.value} value={item.value}>{item.label}</option>
+        ))}
+      </Select>
+      <Select label="Language" value={filters.language} onChange={(e) => updateFilters({ language: e.target.value })}>
+        <option value="">Any language</option>
+        {SPOKEN_LANGUAGES.map((item) => (
+          <option key={item} value={item}>{item}</option>
+        ))}
       </Select>
       <Select label="Department" value={filters.department} onChange={(e) => updateFilters({ department: e.target.value })}>
         <option value="">All departments</option>
@@ -137,7 +158,7 @@ function OpportunitiesContent() {
       <PageHeader
         breadcrumbs={<Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Opportunities" }]} />}
         title="Opportunity marketplace"
-        description={`${filtered.length} opportunities from verified organizations. ${user?.role === "student" ? "Match scores shown for your profile." : "Sign in as a student to see match scores."}`}
+        description={`${filtered.length} opportunities from verified organizations — local Bangladesh roles and international remote jobs. ${user?.role === "student" || user?.role === "industry-professional" ? "Match scores shown for your profile." : "Sign in as a student to see match scores."}`}
         actions={
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={() => setFilterDrawer(true)} className="lg:hidden">
@@ -168,7 +189,7 @@ function OpportunitiesContent() {
             <option value="deadline">Deadline</option>
             <option value="newest">Newest</option>
             <option value="compensation">Compensation</option>
-            {user?.role === "student" ? <option value="match">Match score</option> : null}
+            {user?.role === "student" || user?.role === "industry-professional" ? <option value="match">Match score</option> : null}
           </Select>
           <div className="flex rounded-lg border border-slate-200 dark:border-slate-700">
             <button

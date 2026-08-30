@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Sparkles,
   Users,
+  Briefcase,
 } from "lucide-react";
 import { toast } from "sonner";
 import { NexusMark } from "@/components/brand/NexusLogo";
@@ -26,10 +27,12 @@ import { cn } from "@/lib/cn";
 
 const roleLabels = {
   student: "Student",
+  teacher: "Faculty",
   faculty: "Faculty",
   researcher: "Researcher",
   organization: "Organization",
-  "university-admin": "University",
+  "industry-professional": "Professional",
+  "university-admin": "Institution",
   ugc: "UGC",
   helpdesk: "Helpdesk",
 };
@@ -40,14 +43,16 @@ const roleIcons = {
   researcher: Microscope,
   organization: Building2,
   "university-admin": Landmark,
+  "industry-professional": Briefcase,
+  teacher: Users,
   ugc: Scale,
   helpdesk: Headphones,
 };
 
 const TRUST_POINTS = [
-  { icon: ShieldCheck, text: "University-verified profiles" },
-  { icon: Sparkles, text: "Explainable opportunity matching" },
-  { icon: Landmark, text: "UGC-backed institutional network" },
+  { icon: ShieldCheck, text: "Identity-verified learner and educator profiles" },
+  { icon: Sparkles, text: "Matching for local and international remote roles" },
+  { icon: Landmark, text: "National network of institutions, industry, and UGC" },
 ];
 
 export default function LoginPage() {
@@ -169,7 +174,7 @@ export default function LoginPage() {
               Sign in to continue your work across Bangladesh.
             </h1>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-cream/75">
-              One verified account for students, faculty, researchers, universities, and industry partners.
+              One verified account for students, faculty, researchers, institutions, and industry partners.
             </p>
             <ul className="mt-8 space-y-3">
               {TRUST_POINTS.map(({ icon: Icon, text }) => (
@@ -182,7 +187,7 @@ export default function LoginPage() {
               ))}
             </ul>
             <p className="mt-auto pt-8 text-xs tracking-wide text-cream/50">
-              Universities · Industry · UGC programme office
+              Institutions · Industry · Faculty · UGC programme office
             </p>
           </div>
         </aside>

@@ -44,6 +44,10 @@ function mergeSeedById(existing = [], seedRecords = [], key = "id") {
   return Array.from(map.values());
 }
 
+function foldTeachersIntoFaculty(users = []) {
+  return users.map((user) => (user.role === "teacher" ? { ...user, role: "faculty" } : user));
+}
+
 function findSeedUserByEmail(email) {
   const normalized = String(email).toLowerCase();
   return seed.users.find((u) => u.email.toLowerCase() === normalized) || null;
@@ -276,6 +280,8 @@ export const useAppStore = create(
       setJourneyStage: (stage) => {
         const user = get().getCurrentUser();
         const yearMap = {
+          school: 10,
+          college: 12,
           "first-year": 1,
           "middle-years": 2,
           "final-year": 4,
@@ -1094,8 +1100,11 @@ export const useAppStore = create(
           return {
             ...persistedState,
             version: STORE_VERSION,
-            users: mergeSeedById(persistedState.users, seed.users),
+            users: foldTeachersIntoFaculty(mergeSeedById(persistedState.users, seed.users)),
             matches: mergeSeedById(persistedState.matches, seed.matches),
+            opportunities: mergeSeedById(persistedState.opportunities, seed.opportunities),
+            courses: mergeSeedById(persistedState.courses, seed.courses),
+            universities: mergeSeedById(persistedState.universities, seed.universities),
           };
         }
         return persistedState;

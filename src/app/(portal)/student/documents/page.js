@@ -63,7 +63,7 @@ export default function DocumentsPage() {
     <div className="space-y-8">
       <PageHeader
         title="Documents"
-        description="Upload and manage document metadata for applications"
+        description="Upload CVs, transcripts, and identity documents (NID, birth certificate, or passport) used for verification"
       />
 
       <section className="card-surface max-w-xl space-y-4 p-4">
@@ -72,7 +72,7 @@ export default function DocumentsPage() {
           label="Document type"
           value={docType}
           onChange={(e) => setDocType(e.target.value)}
-          options={["CV", "Transcript", "Cover letter", "Portfolio", "Income certificate", "Other"]}
+          options={["CV", "Transcript", "Cover letter", "Portfolio", "Income certificate", "National ID Card", "Birth Certificate", "Passport", "Other"]}
         />
         <FileUploader
           label="File"

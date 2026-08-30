@@ -62,6 +62,20 @@ export function defaultCareerRoadmap(journeyStage) {
     { id: "rm-4", title: "Enroll in a gap-closing course", completed: false },
     { id: "rm-5", title: "Secure faculty recommendation letter", completed: false },
   ];
+  if (stage === "school") {
+    return [
+      { id: "rm-s1", title: "Complete a holiday digital-skills workshop", completed: false },
+      { id: "rm-s2", title: "Start an English or language course", completed: false },
+      { id: "rm-s3", title: "Build a first CV on Nexus", completed: false },
+    ];
+  }
+  if (stage === "college") {
+    return [
+      { id: "rm-c1", title: "Enrol in a semester-break bootcamp", completed: false },
+      { id: "rm-c2", title: "Explore scholarships and language tests", completed: false },
+      { id: "rm-c3", title: "Complete a short professional certificate", completed: false },
+    ];
+  }
   if (stage === "first-year") {
     return [
       { id: "rm-f1", title: "Explore career tracks on Nexus", completed: false },

@@ -19,7 +19,7 @@ export const metadata = {
     template: "%s | Nexus",
   },
   description:
-    "Prototype of Bangladesh's national opportunity-matching ecosystem connecting students, faculty, universities, organizations, and UGC.",
+    "Prototype of Bangladesh's national digital education, skills, and opportunity hub connecting students, teachers, faculty, researchers, institutions, companies, and UGC.",
   robots: { index: false, follow: false },
   icons: {
     icon: "/brand/nexus-mark.svg",

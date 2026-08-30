@@ -8,7 +8,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { Button } from "@/components/ui/Button";
 
 const FAQ_ITEMS = [
-  { id: "what-is-nexus", title: "What is Nexus?", content: "Nexus is a frontend prototype of Bangladesh's National Digital Matchmaking Hub — connecting students, faculty, universities, organizations, and UGC through a verified opportunity marketplace with explainable matching." },
+  { id: "what-is-nexus", title: "What is Nexus?", content: "Nexus is a frontend prototype of Bangladesh's national digital education, skills, and opportunity hub — connecting students from universities, colleges, schools, madrasas, polytechnics and other institutions with teachers, faculty, researchers, companies, training providers, and UGC." },
   { id: "is-data-real", title: "Is the data real?", content: "No. All users, organizations, opportunities, and metrics in this prototype are simulated seed data for demonstration purposes." },
   { id: "match-scores", title: "How are match scores calculated?", content: "Scores use seven components: skills (30), eligibility (20), career fit (15), location (10), schedule (10), compensation (10), and track record (5). Sensitive attributes are never used. See the help article on match scores for details." },
   { id: "university-approval", title: "Why do applications need university approval?", content: "Most internships and scholarships require your university to review the match before it reaches the organization. This human-in-the-loop step protects students and maintains institutional oversight." },
@@ -17,7 +17,9 @@ const FAQ_ITEMS = [
   { id: "tigerfed", title: "What is TIGERfed?", content: "TIGERfed is a mocked single sign-on flow simulating federated identity from Bangladeshi universities. It is clearly labeled as a simulation and does not connect to real systems." },
   { id: "helpdesk-sla", title: "What is the helpdesk SLA?", content: "The prototype targets 95% of support tickets answered within 24 hours, with escalation paths to university administrators and UGC for disputes." },
   { id: "report-safety", title: "How do I report a safety concern?", content: "Visit the Safety page for reporting paths. For urgent physical danger, contact local emergency services first." },
-  { id: "register-org", title: "How long does organization verification take?", content: "In the prototype, new organizations enter a Pending verification state until trade license and representative documents are reviewed — typically simulated within the demo workflow." },
+  { id: "identity-verify", title: "What identity documents are accepted?", content: "During registration you can submit a National ID Card, Birth Certificate, or Passport. Requirements follow age and account type: under-18 students typically use a birth certificate or passport; adult accounts use NID or passport. Documents in this prototype are metadata-only and not sent to a real verification bureau." },
+  { id: "break-courses", title: "Can I study during vacations or semester breaks?", content: "Yes. The course catalogue includes year-round programmes plus short courses, workshops, bootcamps, language courses, and professional training scheduled for summer, winter, semester breaks, and other academic holidays." },
+  { id: "remote-jobs", title: "Does Nexus list international remote jobs?", content: "Yes. Alongside jobs in Bangladesh, the marketplace includes international remote roles. Matching considers skills, education, experience, language proficiency, and career interests." },
 ];
 
 export default function FaqPage() {

@@ -49,7 +49,7 @@ function computeMatches() {
     if (!candidate || !opportunity) return match;
 
     const score =
-      match.candidateRole === "faculty"
+      match.candidateRole === "faculty" || match.candidateRole === "teacher"
         ? scoreFacultyOpportunity(candidate, opportunity)
         : match.candidateRole === "researcher"
           ? scoreResearcherOpportunity(candidate, opportunity)
